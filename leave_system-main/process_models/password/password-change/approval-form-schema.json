@@ -1,0 +1,18 @@
+{
+  "title": "审批表单",
+  "description": "请审批密码修改申请",
+  "type": "object",
+  "required": ["action", "comment"],
+  "properties": {
+    "action": {
+      "type": "string",
+      "title": "审批决策",
+      "enum": ["approve", "reject"],
+      "enumNames": ["批准", "拒绝"]
+    },
+    "comment": {
+      "type": "string",
+      "title": "审批意见"
+    }
+  }
+}

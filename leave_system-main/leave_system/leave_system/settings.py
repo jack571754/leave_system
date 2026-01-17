@@ -55,6 +55,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'leave_api',
+    'organization',
+    'notifications',
 ]
 
 MIDDLEWARE = [
@@ -73,7 +75,7 @@ ROOT_URLCONF = 'leave_system.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -137,14 +139,39 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Celery Configuration
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 分钟超时
+
+# Celery Beat Schedule (定时任务配置)
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'check-timeout-tasks': {
+        'task': 'leave_api.tasks.check_timeout_tasks',
+        'schedule': crontab(minute=0),  # 每小时执行一次
+    },
+}
+
+# Email Configuration (用于通知系统)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # 开发环境使用控制台
+DEFAULT_FROM_EMAIL = 'noreply@leavesystem.com'
+
+# Default Workflow Spec
+DEFAULT_WORKFLOW_SPEC = 'basic_approval'
 
 
 # Logging Configuration

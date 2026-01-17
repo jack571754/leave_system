@@ -1,0 +1,7 @@
+{
+  "id": "password-change",
+  "display_name": "密码修改审批流程",
+  "description": "支持多级审批和多分支的密码修改审批流程",
+  "primary_file_name": "password-change.bpmn",
+  "primary_process_id": "Process_PasswordChange"
+}
