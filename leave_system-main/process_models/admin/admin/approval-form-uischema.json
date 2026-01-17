@@ -1,0 +1,22 @@
+{
+  "leave_request_id": {
+    "ui:widget": "hidden"
+  },
+  "user_email": {
+    "ui:readonly": true
+  },
+  "reason": {
+    "ui:widget": "textarea",
+    "ui:readonly": true
+  },
+  "leave_hours": {
+    "ui:readonly": true
+  },
+  "approved": {
+    "ui:widget": "radio"
+  },
+  "comment": {
+    "ui:widget": "textarea",
+    "ui:placeholder": "请输入审批意见（可选）"
+  }
+}

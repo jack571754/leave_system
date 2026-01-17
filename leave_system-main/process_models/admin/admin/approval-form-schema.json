@@ -1,0 +1,38 @@
+{
+  "title": "请假审批",
+  "description": "请审批以下请假申请",
+  "type": "object",
+  "required": ["approved"],
+  "properties": {
+    "leave_request_id": {
+      "type": "integer",
+      "title": "申请ID",
+      "readOnly": true
+    },
+    "user_email": {
+      "type": "string",
+      "title": "申请人邮箱",
+      "readOnly": true
+    },
+    "reason": {
+      "type": "string",
+      "title": "请假原因",
+      "readOnly": true
+    },
+    "leave_hours": {
+      "type": "integer",
+      "title": "请假时长（小时）",
+      "readOnly": true
+    },
+    "approved": {
+      "type": "boolean",
+      "title": "审批决定",
+      "enum": [true, false],
+      "enumNames": ["批准", "拒绝"]
+    },
+    "comment": {
+      "type": "string",
+      "title": "审批意见"
+    }
+  }
+}

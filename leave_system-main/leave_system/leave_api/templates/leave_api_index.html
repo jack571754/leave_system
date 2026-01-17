@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>请假审批系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { text-align: center; color: #333; margin-bottom: 30px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab { padding: 10px 20px; background: white; border: none; cursor: pointer; border-radius: 5px; }
+        .tab.active { background: #1890ff; color: white; }
+        .panel { display: none; background: white; padding: 20px; border-radius: 5px; }
+        .panel.active { display: block; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        textarea { min-height: 100px; }
+        button { padding: 10px 20px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #40a9ff; }
+        .card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 5px; border-left: 4px solid #1890ff; }
+        .status { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; }
+        .status.pending { background: #fff7e6; color: #fa8c16; }
+        .status.approved { background: #f6ffed; color: #52c41a; }
+        .status.rejected { background: #fff1f0; color: #f5222d; }
+        .actions { margin-top: 10px; display: flex; gap: 10px; }
+        .btn-approve { background: #52c41a; }
+        .btn-reject { background: #f5222d; }
+        .info { color: #666; font-size: 14px; margin-top: 5px; }
+        .empty { text-align: center; color: #999; padding: 40px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏢 请假审批系统</h1>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('create')">📝 申请请假</button>
+            <button class="tab" onclick="showTab('my')">📋 我的请假</button>
+            <button class="tab" onclick="showTab('approve')">✅ 待审批</button>
+        </div>
+
+        <!-- 申请请假 -->
+        <div id="create" class="panel active">
+            <h2>申请请假</h2>
+            <div class="form-group">
+                <label>邮箱</label>
+                <input type="email" id="userEmail" placeholder="your@example.com">
+            </div>
+            <div class="form-group">
+                <label>请假原因</label>
+                <textarea id="reason" placeholder="请输入请假原因..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>请假时长（小时）</label>
+                <input type="number" id="leaveHours" placeholder="8" min="1">
+            </div>
+            <button onclick="createLeave()">提交申请</button>
+        </div>
+
+        <!-- 我的请假 -->
+        <div id="my" class="panel">
+            <h2>我的请假申请</h2>
+            <div class="form-group">
+                <label>邮箱</label>
+                <input type="email" id="myEmail" placeholder="your@example.com">
+                <button onclick="loadMyRequests()" style="margin-top: 10px;">查询</button>
+            </div>
+            <div id="myList"></div>
+        </div>
+
+        <!-- 待审批 -->
+        <div id="approve" class="panel">
+            <h2>待审批列表</h2>
+            <div class="form-group">
+                <label>用户ID</label>
+                <input type="text" id="userId" placeholder="1" value="1">
+                <button onclick="loadPendingApprovals()" style="margin-top: 10px;">查询</button>
+            </div>
+            <div id="approveList"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8888/api';
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tab).classList.add('active');
+        }
+
+        async function createLeave() {
+            const userEmail = document.getElementById('userEmail').value;
+            const reason = document.getElementById('reason').value;
+            const leaveHours = document.getElementById('leaveHours').value;
+
+            if (!userEmail || !reason || !leaveHours) {
+                alert('请填写完整信息');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/leave/create/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_email: userEmail,
+                        reason: reason,
+                        leave_hours: parseInt(leaveHours)
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ 请假申请提交成功！\n\n请假ID: ' + data.leave_request_id + '\n工作流ID: ' + data.workflow_instance_id);
+                    document.getElementById('reason').value = '';
+                    document.getElementById('leaveHours').value = '';
+                } else {
+                    alert('❌ 提交失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('❌ 请求失败: ' + error.message);
+            }
+        }
+
+        async function loadMyRequests() {
+            const email = document.getElementById('myEmail').value;
+            if (!email) {
+                alert('请输入邮箱');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/leave/my-requests/?user_email=${email}`);
+                const data = await response.json();
+
+                const list = document.getElementById('myList');
+                
+                if (data.requests && data.requests.length > 0) {
+                    list.innerHTML = data.requests.map(r => `
+                        <div class="card">
+                            <div><strong>请假原因:</strong> ${r.reason}</div>
+                            <div class="info">时长: ${r.leave_hours}小时 | 状态: <span class="status ${r.status}">${r.status_display}</span></div>
+                            ${r.approver_name ? `<div class="info">审批人: ${r.approver_name}</div>` : ''}
+                            ${r.approval_comment ? `<div class="info">审批意见: ${r.approval_comment}</div>` : ''}
+                            <div class="info">申请时间: ${new Date(r.created_at).toLocaleString()}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    list.innerHTML = '<div class="empty">暂无请假记录</div>';
+                }
+            } catch (error) {
+                alert('❌ 查询失败: ' + error.message);
+            }
+        }
+
+        async function loadPendingApprovals() {
+            const userId = document.getElementById('userId').value;
+            if (!userId) {
+                alert('请输入用户ID');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/leave/pending-approvals/?user_id=${userId}`);
+                const data = await response.json();
+
+                const list = document.getElementById('approveList');
+                
+                if (data.pending_approvals && data.pending_approvals.length > 0) {
+                    list.innerHTML = data.pending_approvals.map(item => {
+                        const r = item.leave_request;
+                        return `
+                            <div class="card">
+                                <div><strong>申请人:</strong> ${r.staff_full_name || r.user_email}</div>
+                                <div class="info">部门: ${r.staff_dept || '未知'}</div>
+                                <div><strong>请假原因:</strong> ${r.reason}</div>
+                                <div class="info">时长: ${r.leave_hours}小时</div>
+                                <div class="info">申请时间: ${new Date(r.created_at).toLocaleString()}</div>
+                                <div class="actions">
+                                    <button class="btn-approve" onclick="approve('${item.task_id}', ${item.process_instance_id}, ${r.id}, true)">✅ 批准</button>
+                                    <button class="btn-reject" onclick="approve('${item.task_id}', ${item.process_instance_id}, ${r.id}, false)">❌ 拒绝</button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    list.innerHTML = '<div class="empty">暂无待审批</div>';
+                }
+            } catch (error) {
+                alert('❌ 查询失败: ' + error.message);
+            }
+        }
+
+        async function approve(taskId, processInstanceId, leaveRequestId, approved) {
+            const comment = prompt(approved ? '请输入批准意见:' : '请输入拒绝原因:');
+            if (comment === null) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/leave/approve/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        task_id: taskId,
+                        process_instance_id: processInstanceId,
+                        leave_request_id: leaveRequestId,
+                        approved: approved,
+                        comment: comment
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ 审批完成！');
+                    loadPendingApprovals();
+                } else {
+                    alert('❌ 审批失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('❌ 请求失败: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "title": "Text Field",
+  "description": "A simple text field that is required, has a default value, sets a placeholder, includes a description. (field name will be 'firstname')",
+  "type": "object",
+  "required": [
+    "leave_hours"
+  ],
+  "properties": {
+    "leave_hours": {
+      "type": "number",
+      "title": "请假小时数",
+      "default": "Chuck"
+    },
+  "reason": {
+    "type": "string",
+    "title": "请假原因"
+}
+  }
+}
