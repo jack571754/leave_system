@@ -1,8 +1,8 @@
-# 🎨 BPMN 流程设计器使用指南
+# 🎨 LogicFlow 流程设计器使用指南
 
 ## 访问地址
 
-**BPMN 设计器**: http://localhost:8000/bpmn-designer/
+**LogicFlow 设计器**: http://localhost:8000/bpmn-designer/
 
 或从管理面板进入：
 1. 访问 http://localhost:8000/dashboard/
@@ -15,19 +15,26 @@
 
 ### 1. 可视化流程设计
 - 🎯 拖拽式设计界面
-- 📊 基于 bpmn-js 的专业建模器
+- 📊 基于 LogicFlow 的流程编辑框架
 - 🔄 实时预览和编辑
+- 🎨 现代化 UI 设计
 
 ### 2. 智能属性面板
 - 📝 右侧属性编辑面板
 - 🎨 深色主题界面
 - 🔧 根据元素类型动态显示属性
+- 💡 实时属性更新
 
 ### 3. 代码编辑器（CodeMirror）
-- 🌈 语法高亮（Python、XML、JavaScript）
+- 🌈 语法高亮（Python、JavaScript）
 - 📏 行号显示
 - 🎯 自动补全和括号匹配
 - 🌙 Monokai 主题
+
+### 4. 右键菜单
+- 🗑️ 快速删除元素
+- 📋 复制节点
+- ⚡ 便捷操作
 
 ---
 
@@ -37,36 +44,37 @@
 
 | 按钮 | 功能 | 说明 |
 |------|------|------|
-| 📄 新建 | 创建新流程 | 创建一个空白的 BPMN 流程图 |
-| 📂 打开 | 打开文件 | 从本地加载 BPMN 文件 |
-| 💾 保存 | 保存流程 | 下载 BPMN 文件到本地 |
-| ⬇️ 下载 | 下载文件 | 导出 BPMN XML 文件 |
-| 🖼️ 导出SVG | 导出图片 | 导出流程图为 SVG 格式 |
+| 📄 新建 | 创建新流程 | 清空画布并创建新的流程图 |
+| 💾 保存 | 保存流程 | 保存流程数据到服务器 |
+| ⬇️ 下载JSON | 下载文件 | 导出流程为 JSON 文件 |
 | 🏠 返回 | 返回首页 | 返回管理面板 |
 
-### 画布工具栏
+### 左侧工具面板
 
-| 按钮 | 功能 | 快捷键 |
-|------|------|--------|
-| 🔍+ | 放大 | - |
-| 🔍- | 缩小 | - |
-| ⚡ | 适应画布 | - |
-| ↶ | 撤销 | Ctrl+Z |
-| ↷ | 重做 | Ctrl+Y |
+LogicFlow 提供了丰富的节点类型：
+
+| 节点 | 类型 | 说明 |
+|------|------|------|
+| ⭕ 开始 | circle | 流程开始节点（绿色） |
+| 📋 用户任务 | rect | 需要用户交互的任务（蓝色） |
+| 📝 脚本任务 | rect | 自动执行的脚本任务（紫色） |
+| 🔀 网关 | diamond | 条件判断网关（黄色） |
+| ⭕ 结束 | circle | 流程结束节点（红色） |
 
 ### 属性面板
 
 #### 基本属性（所有元素）
 - **ID**: 元素唯一标识符（只读）
 - **名称**: 元素显示名称
+- **节点类型**: 节点的类型标识
 
-#### 用户任务 (UserTask)
+#### 用户任务节点
 
 **表单配置**
-- `formJsonSchemaFilename`: 表单 Schema 文件名
-- `formUiSchemaFilename`: 表单 UI Schema 文件名
+- `formSchema`: 表单 Schema 文件名
+- `formUiSchema`: 表单 UI Schema 文件名
 
-**前置脚本 (Pre-Script)**
+**前置脚本 (preScript)**
 - 在任务执行前运行的 Python 代码
 - 用于设置变量、分配审批人等
 - 支持语法高亮和自动补全
@@ -80,7 +88,7 @@ assigned_to = "manager@company.com"
 approval_level = 1
 ```
 
-**后置脚本 (Post-Script)**
+**后置脚本 (postScript)**
 - 在任务完成后运行的 Python 代码
 - 用于处理任务结果、更新状态等
 
@@ -93,25 +101,7 @@ else:
     status = "rejected"
 ```
 
-#### 脚本任务 (ScriptTask)
-
-**脚本内容**
-- 完整的 Python 脚本
-- 用于执行业务逻辑
-
-示例：
-```python
-# 计算审批级别
-if leave_hours > 24:
-    approval_level = 2
-else:
-    approval_level = 1
-
-# 查找审批人
-assigned_to = get_direct_manager(user_email)
-```
-
-#### 条件流 (SequenceFlow)
+#### 连线属性
 
 **条件表达式**
 - Python 表达式
@@ -129,17 +119,6 @@ password_type == "critical" and user_level == "admin"
 action == "approve"
 ```
 
-#### 网关 (Gateway)
-
-**排他网关 (ExclusiveGateway)**
-- 只选择一条满足条件的路径
-- 需要在出口流上设置条件表达式
-- 可以设置默认流
-
-**并行网关 (ParallelGateway)**
-- 同时执行所有出口流
-- 用于并行审批
-
 ---
 
 ## 📝 使用流程
@@ -148,47 +127,50 @@ action == "approve"
 
 1. 点击 **📄 新建** 按钮
 2. 系统自动创建基础流程模板
-3. 包含：开始事件 → 用户任务 → 结束事件
+3. 包含：开始节点 → 用户任务 → 结束节点
 
 ### 2. 添加元素
 
-1. 从左侧工具面板拖拽元素到画布
-2. 或点击现有元素的快捷菜单添加
+**方法一：拖拽添加**
+1. 从左侧工具面板拖拽节点到画布
+2. 松开鼠标放置节点
 
-**常用元素**：
-- ⭕ 开始事件 (Start Event)
-- 📋 用户任务 (User Task)
-- 📝 脚本任务 (Script Task)
-- 🔀 排他网关 (Exclusive Gateway)
-- ⚡ 并行网关 (Parallel Gateway)
-- 🔚 结束事件 (End Event)
-- ➡️ 连接线 (Sequence Flow)
+**方法二：连线创建**
+1. 点击节点边缘的连接点
+2. 拖动到目标节点创建连线
 
 ### 3. 配置属性
 
-1. 点击画布上的元素
+1. 点击画布上的节点或连线
 2. 右侧属性面板自动显示该元素的属性
 3. 编辑属性值
-4. 修改自动保存到流程中
+4. 修改实时保存
 
 ### 4. 编辑脚本
 
-1. 选择用户任务或脚本任务
+1. 选择用户任务节点
 2. 在属性面板找到脚本编辑器
 3. 输入 Python 代码
 4. 享受语法高亮和自动补全
 
 ### 5. 设置条件
 
-1. 选择连接线（Sequence Flow）
+1. 选择连线
 2. 在属性面板的条件编辑器中输入表达式
 3. 使用 Python 语法
 
-### 6. 保存流程
+### 6. 右键操作
 
-1. 点击 **💾 保存** 或 **⬇️ 下载** 按钮
-2. 文件自动下载到本地
-3. 将文件保存到 `process_models/` 目录
+1. 右键点击节点或连线
+2. 选择操作：
+   - 🗑️ 删除：删除选中的元素
+   - 📋 复制：复制节点（仅节点可用）
+
+### 7. 保存流程
+
+1. 点击 **💾 保存** 按钮保存到服务器
+2. 或点击 **⬇️ 下载JSON** 导出到本地
+3. JSON 文件包含完整的流程数据
 
 ---
 
@@ -201,12 +183,16 @@ action == "approve"
 ```
 
 **配置步骤**：
-1. 创建用户任务"填写申请"
-   - 设置表单：`leave-form-schema.json`
-2. 创建用户任务"部门主管审批"
-   - 前置脚本：`assigned_to = "manager@company.com"`
-   - 设置表单：`approval-form-schema.json`
-3. 连接所有元素
+1. 从左侧拖拽"用户任务"到画布
+2. 双击节点，修改名称为"填写申请"
+3. 在属性面板设置：
+   - formSchema: `leave-form-schema.json`
+4. 再添加一个用户任务"部门主管审批"
+5. 设置前置脚本：
+   ```python
+   assigned_to = "manager@company.com"
+   ```
+6. 连接所有节点
 
 ### 示例2：条件分支流程
 
@@ -217,77 +203,182 @@ action == "approve"
 ```
 
 **配置步骤**：
-1. 添加排他网关
-2. 设置短期分支条件：`leave_hours <= 24`
-3. 设置长期分支条件：`leave_hours > 24`
-4. 配置各审批任务的审批人
+1. 添加网关节点（diamond）
+2. 从网关拖出两条连线
+3. 选择第一条连线，设置条件：
+   ```python
+   leave_hours <= 24
+   ```
+4. 选择第二条连线，设置条件：
+   ```python
+   leave_hours > 24
+   ```
+5. 配置各审批任务的审批人
 
-### 示例3：并行审批流程
+### 示例3：多级审批流程
 
 ```
-开始 → 填写申请 → 并行网关
-                    ├─ 部门主管审批 ─┐
-                    └─ HR审批 ────────┤→ 汇聚网关 → 结束
+开始 → 填写申请 → 一级审批 → 二级审批 → 三级审批 → 结束
 ```
 
 **配置步骤**：
-1. 添加并行网关（分支）
-2. 添加两个审批任务
-3. 添加并行网关（汇聚）
-4. 连接所有元素
+1. 依次添加三个用户任务节点
+2. 为每个审批节点设置不同的审批人：
+   ```python
+   # 一级审批
+   assigned_to = get_direct_manager(user_email)
+   
+   # 二级审批
+   assigned_to = get_department_manager(user_email)
+   
+   # 三级审批
+   assigned_to = "ceo@company.com"
+   ```
+3. 连接所有节点
 
 ---
 
 ## 💡 最佳实践
 
 ### 1. 命名规范
-- 使用有意义的元素名称
-- ID 使用驼峰命名：`Task_ManagerApproval`
-- 名称使用中文：`部门主管审批`
+- 使用有意义的节点名称
+- ID 自动生成，无需手动修改
+- 名称使用中文便于理解
 
 ### 2. 脚本编写
 - 保持脚本简洁
 - 使用注释说明逻辑
 - 避免复杂的业务逻辑
+- 将复杂逻辑封装为函数
 
 ### 3. 条件表达式
 - 使用简单的比较表达式
 - 避免复杂的嵌套条件
-- 确保条件互斥（排他网关）
+- 确保条件互斥（网关分支）
+- 添加默认分支处理异常情况
 
-### 4. 文件管理
+### 4. 布局设计
+- 保持流程图整洁
+- 从左到右或从上到下布局
+- 避免连线交叉
+- 合理使用网格对齐
+
+### 5. 文件管理
 - 定期保存流程
 - 使用版本控制（Git）
 - 备份重要流程
+- 使用有意义的文件名
 
 ---
 
-## 🔧 快捷键
+## 🎨 LogicFlow 特色功能
 
-| 快捷键 | 功能 |
-|--------|------|
-| Ctrl+Z | 撤销 |
-| Ctrl+Y | 重做 |
-| Delete | 删除选中元素 |
-| Ctrl+C | 复制 |
-| Ctrl+V | 粘贴 |
-| Ctrl+A | 全选 |
+### 1. 网格对齐
+- 自动网格对齐功能
+- 20px 网格间距
+- 点状网格显示
+
+### 2. 节点样式
+- 圆角矩形设计
+- 彩色节点区分类型
+- 清晰的视觉层次
+
+### 3. 连线样式
+- 折线连接（polyline）
+- 自动路径规划
+- 避免节点重叠
+
+### 4. 交互体验
+- 流畅的拖拽体验
+- 实时属性更新
+- 右键快捷菜单
+- 键盘快捷键支持
+
+---
+
+## 🔧 快捷操作
+
+### 鼠标操作
+- **左键点击**: 选择元素
+- **左键拖拽**: 移动节点
+- **右键点击**: 打开快捷菜单
+- **空白处点击**: 取消选择
+
+### 键盘操作
+- **Delete**: 删除选中元素
+- **Ctrl+C**: 复制（计划中）
+- **Ctrl+V**: 粘贴（计划中）
+- **Ctrl+Z**: 撤销（计划中）
+
+---
+
+## 📊 数据格式
+
+### 流程数据结构
+
+```json
+{
+  "nodes": [
+    {
+      "id": "start-1",
+      "type": "circle",
+      "x": 200,
+      "y": 200,
+      "text": "开始",
+      "properties": {
+        "nodeType": "start",
+        "name": "开始节点"
+      }
+    },
+    {
+      "id": "task-1",
+      "type": "rect",
+      "x": 400,
+      "y": 200,
+      "text": "用户任务",
+      "properties": {
+        "nodeType": "userTask",
+        "name": "用户任务",
+        "formSchema": "leave-form-schema.json",
+        "formUiSchema": "leave-form-uischema.json",
+        "preScript": "assigned_to = 'manager@company.com'",
+        "postScript": ""
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "type": "polyline",
+      "sourceNodeId": "start-1",
+      "targetNodeId": "task-1",
+      "text": "",
+      "properties": {
+        "condition": ""
+      }
+    }
+  ]
+}
+```
 
 ---
 
 ## 📚 相关资源
 
-- **BPMN 2.0 规范**: https://www.omg.org/spec/BPMN/2.0/
-- **bpmn-js 文档**: https://bpmn.io/toolkit/bpmn-js/
-- **SpiffWorkflow 文档**: https://spiffworkflow.readthedocs.io/
+- **LogicFlow 官网**: http://logic-flow.org/
+- **LogicFlow GitHub**: https://github.com/didi/LogicFlow
+- **LogicFlow 文档**: http://logic-flow.org/guide/start.html
 - **CodeMirror 文档**: https://codemirror.net/
 
 ---
 
 ## ❓ 常见问题
 
+### Q: LogicFlow 和 BPMN 有什么区别？
+A: LogicFlow 是一个更灵活的流程图编辑框架，专注于业务自定义。相比 BPMN，它更轻量、更易于扩展，适合快速开发流程配置功能。
+
 ### Q: 如何保存流程到服务器？
-A: 点击保存按钮下载文件，然后手动复制到 `process_models/` 目录。
+A: 点击"💾 保存"按钮，流程数据会通过 API 保存到服务器。也可以点击"⬇️ 下载JSON"导出到本地。
 
 ### Q: 脚本中可以使用哪些函数？
 A: 可以使用 SpiffWorkflow 提供的函数，如 `get_direct_manager()`, `get_department_manager()` 等。
@@ -298,6 +389,25 @@ A: 保存流程后，在管理面板创建申请，选择该流程进行测试�
 ### Q: 条件表达式不生效？
 A: 检查表达式语法，确保返回布尔值，变量名正确。
 
+### Q: 可以导入 BPMN 文件吗？
+A: 当前版本使用 JSON 格式存储流程。如需从 BPMN 迁移，需要手动重建流程。
+
+### Q: 如何自定义节点样式？
+A: LogicFlow 支持自定义节点，可以通过扩展框架来实现自定义样式和行为。
+
+---
+
+## 🚀 未来计划
+
+- [ ] 支持更多节点类型
+- [ ] 添加撤销/重做功能
+- [ ] 支持流程模板
+- [ ] 添加流程验证
+- [ ] 支持流程版本管理
+- [ ] 集成流程测试工具
+- [ ] 支持 BPMN 格式导入导出
+
 ---
 
 **祝你设计出完美的工作流程！** 🎉
+
