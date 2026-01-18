@@ -1,0 +1,17 @@
+{
+  "name": "leave_system-main",
+  "version": "1.0.0",
+  "description": "一个基于 Django + SpiffWorkflow 的多级审批流程管理系统，支持请假申请、密码修改等多种审批场景。",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@logicflow/core": "^1.2.27",
+    "@logicflow/extension": "^1.2.27"
+  }
+}
