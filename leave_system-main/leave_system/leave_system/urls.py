@@ -46,9 +46,19 @@ def bpmn_designer_view(request):
     """BPMN 设计器视图（使用官方插件）"""
     return render(request, 'bpmn_designer.html')
 
+def test_workflow_view(request):
+    """工作流测试页面"""
+    return render(request, 'test_workflow.html')
+
+def dashboard_view(request):
+    """控制台首页"""
+    return render(request, 'dashboard.html')
+
 urlpatterns = [
     path('', index_view, name='index'),
+    path('dashboard/', dashboard_view, name='dashboard'),
     path('bpmn-designer/', bpmn_designer_view, name='bpmn_designer'),
+    path('test-workflow/', test_workflow_view, name='test_workflow'),
     path('api-info/', api_info_view, name='api_info'),
     path('admin/', admin.site.urls),
     path('api/', include('leave_api.urls')),

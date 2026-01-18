@@ -5,21 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BPMN 流程设计器</title>
     
-    <!-- LogicFlow 核心库 -->
-    <script src="/static/logicflow/logic-flow.js"></script>
-    <link rel="stylesheet" href="/static/logicflow/style/index.css">
-    
-    <!-- LogicFlow BPMN 扩展 -->
-    <script src="/static/logicflow/extension/BpmnElement.js"></script>
-    <script src="/static/logicflow/extension/BpmnAdapter.js"></script>
-    
-    <!-- CodeMirror 代码编辑器 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
+    <!-- bpmn-js 核心库 -->
+    <link rel="stylesheet" href="https://unpkg.com/bpmn-js@17.11.1/dist/assets/diagram-js.css">
+    <link rel="stylesheet" href="https://unpkg.com/bpmn-js@17.11.1/dist/assets/bpmn-js.css">
+    <link rel="stylesheet" href="https://unpkg.com/bpmn-js@17.11.1/dist/assets/bpmn-font/css/bpmn-embedded.css">
+    <script src="https://unpkg.com/bpmn-js@17.11.1/dist/bpmn-modeler.development.js"></script>
     
     <style>
         * {
@@ -95,18 +85,10 @@
             background: white;
             border-right: 1px solid #e0e0e0;
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
         }
         
         .sidebar-section {
             padding: 20px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .sidebar-section:last-child {
-            flex: 1;
-            border-bottom: none;
         }
         
         .sidebar h3 {
@@ -117,23 +99,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-        
-        .node-item {
-            padding: 10px;
-            margin-bottom: 10px;
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            cursor: move;
-            transition: all 0.3s;
-            font-size: 13px;
-            user-select: none;
-        }
-        
-        .node-item:hover {
-            background: #e9ecef;
-            transform: translateX(5px);
         }
         
         .process-item {
@@ -160,16 +125,19 @@
             border-color: #667eea;
         }
         
-        .process-name {
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+        .add-btn {
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
         }
         
-        .process-actions {
-            display: flex;
-            gap: 5px;
+        .add-btn:hover {
+            background: #5568d3;
         }
         
         .icon-btn {
@@ -189,21 +157,6 @@
         .icon-btn.delete:hover {
             background: #fee;
             color: #f44;
-        }
-        
-        .add-btn {
-            padding: 6px 12px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-        
-        .add-btn:hover {
-            background: #5568d3;
         }
         
         .empty-list {
@@ -226,58 +179,61 @@
         
         .properties-panel {
             width: 400px;
-            background: #2d2d2d;
-            color: #e0e0e0;
+            background: white;
+            border-left: 1px solid #e0e0e0;
             overflow-y: auto;
-            border-left: 1px solid #444;
+            padding: 20px;
+            display: none;
+        }
+        
+        .properties-panel.show {
+            display: block;
         }
         
         .properties-header {
-            padding: 15px 20px;
-            background: #1e1e1e;
-            border-bottom: 1px solid #444;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
         }
         
         .properties-header h2 {
             font-size: 16px;
-            color: #fff;
+            color: #333;
             margin-bottom: 5px;
         }
         
-        .properties-content {
-            padding: 20px;
+        .properties-header .element-type {
+            font-size: 12px;
+            color: #999;
         }
         
         .property-group {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         
         .property-group h3 {
-            font-size: 14px;
-            color: #fff;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #444;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 600;
         }
         
         .property-item {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         
         .property-label {
             display: block;
             font-size: 12px;
-            color: #aaa;
+            color: #666;
             margin-bottom: 5px;
         }
         
         .property-input {
             width: 100%;
-            padding: 8px 12px;
-            background: #1e1e1e;
-            border: 1px solid #444;
+            padding: 8px;
+            border: 1px solid #ddd;
             border-radius: 4px;
-            color: #e0e0e0;
             font-size: 13px;
         }
         
@@ -286,27 +242,86 @@
             border-color: #667eea;
         }
         
-        .code-editor {
-            margin-top: 10px;
-            border: 1px solid #444;
+        .property-textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
             border-radius: 4px;
-            overflow: hidden;
+            font-size: 12px;
+            min-height: 100px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            line-height: 1.5;
         }
         
-        .CodeMirror {
-            height: 200px;
-            font-size: 13px;
+        .property-textarea:focus {
+            outline: none;
+            border-color: #667eea;
         }
         
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 900px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            font-size: 18px;
+            margin: 0;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
             color: #666;
         }
         
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .xml-viewer {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre;
         }
     </style>
 </head>
@@ -315,8 +330,7 @@
         <h1>🎨 BPMN 流程设计器</h1>
         <div class="header-actions">
             <button class="btn btn-success" onclick="saveDiagram()">💾 保存</button>
-            <button class="btn btn-primary" onclick="viewXML()">📄 查看XML</button>
-            <button class="btn btn-primary" onclick="downloadJSON()">⬇️ 导出JSON</button>
+            <button class="btn btn-primary" onclick="viewXML()">👁️ 查看XML</button>
             <button class="btn btn-secondary" onclick="window.location.href='/dashboard/'">🏠 返回</button>
         </div>
     </div>
@@ -332,284 +346,191 @@
                     <div class="empty-list">加载中...</div>
                 </div>
             </div>
-            <div class="sidebar-section">
-                <h3>BPMN 节点</h3>
-                <div class="node-item" draggable="true" data-type="bpmn:startEvent">
-                    ⭕ 开始事件
-                </div>
-                <div class="node-item" draggable="true" data-type="bpmn:endEvent">
-                    ⭕ 结束事件
-                </div>
-                <div class="node-item" draggable="true" data-type="bpmn:userTask">
-                    📋 用户任务
-                </div>
-                <div class="node-item" draggable="true" data-type="bpmn:serviceTask">
-                    ⚙️ 服务任务
-                </div>
-                <div class="node-item" draggable="true" data-type="bpmn:exclusiveGateway">
-                    🔀 排他网关
-                </div>
-            </div>
         </div>
         
         <div class="canvas-container">
             <div id="canvas"></div>
         </div>
         
-        <div class="properties-panel">
-            <div class="properties-header">
-                <h2 id="element-name">属性面板</h2>
+        <div class="properties-panel" id="properties-panel"></div>
+    </div>
+    
+    <div class="modal" id="xmlModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>查看 XML</h2>
+                <button class="modal-close" onclick="closeXMLModal()">×</button>
             </div>
-            <div class="properties-content" id="properties-content">
-                <div class="empty-state">
-                    <div class="empty-state-icon">📋</div>
-                    <p>选择画布上的元素<br>查看和编辑属性</p>
-                </div>
+            <div class="modal-body">
+                <div class="xml-viewer" id="xmlContent"></div>
             </div>
         </div>
     </div>
     
     <script>
-        let lf = null;
-        let currentElement = null;
-        let codeEditors = {};
+        let modeler = null;
         let currentProcessId = null;
         let processList = [];
+        const SPIFF_NS = 'http://spiffworkflow.org/bpmn/schema/1.0/core';
 
-        // 初始化 LogicFlow
-        function initLogicFlow() {
-            if (!window.LogicFlow) {
-                console.error('LogicFlow 库未加载');
-                alert('LogicFlow 库加载失败，请检查网络连接或刷新页面');
+        const defaultDiagram = `<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" 
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:spiffworkflow="${SPIFF_NS}"
+                  id="Definitions_1" 
+                  targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_1" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="开始">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_1" name="任务">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_1" name="结束">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_1" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_1" targetRef="EndEvent_1" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_1_di" bpmnElement="Task_1">
+        <dc:Bounds x="240" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
+        <dc:Bounds x="392" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="188" y="120" />
+        <di:waypoint x="240" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="340" y="120" />
+        <di:waypoint x="392" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>`;
+
+        function initBpmnModeler() {
+            if (!window.BpmnJS) {
+                console.error('bpmn-js 库未加载');
+                alert('bpmn-js 库加载失败，请检查网络连接或刷新页面');
                 return;
             }
 
-            if (!window.BpmnElement || !window.BpmnAdapter) {
-                console.error('BPMN 插件未加载');
-                alert('BPMN 插件加载失败，请检查文件路径');
-                return;
-            }
-
-            const { LogicFlow } = window;
-            
-            // 创建 LogicFlow 实例
-            lf = new LogicFlow({
-                container: document.getElementById('canvas'),
-                grid: {
-                    size: 20,
-                    visible: true,
-                    type: 'dot',
-                    config: {
-                        color: '#e0e0e0',
-                        thickness: 1,
-                    }
-                },
+            modeler = new BpmnJS({
+                container: '#canvas',
                 keyboard: {
-                    enabled: true,
-                },
-                edgeTextDraggable: false,
-                nodeTextDraggable: false,
-                adjustEdge: false,
-                hoverOutline: false,
-                plugins: [window.BpmnElement, window.BpmnAdapter]
-            });
-            
-            // 监听节点点击事件
-            lf.on('node:click', ({ data }) => {
-                currentElement = data;
-                showProperties(data);
-            });
-            
-            // 监听边点击事件
-            lf.on('edge:click', ({ data }) => {
-                currentElement = data;
-                showEdgeProperties(data);
-            });
-            
-            // 监听画布点击事件
-            lf.on('blank:click', () => {
-                currentElement = null;
-                showEmptyState();
-            });
-            
-            // 监听节点拖动，强制更新文字位置
-            lf.on('node:dnd-drag', ({ data }) => {
-                const nodeModel = lf.graphModel.getNodeModelById(data.id);
-                if (nodeModel && nodeModel.text && typeof nodeModel.text.value === 'string') {
-                    nodeModel.text.x = data.x;
-                    nodeModel.text.y = data.y + 40;
+                    bindTo: document
                 }
             });
+
+            const eventBus = modeler.get('eventBus');
             
-            // 监听节点拖动结束
-            lf.on('node:drop', ({ data }) => {
-                const nodeModel = lf.graphModel.getNodeModelById(data.id);
-                if (nodeModel && nodeModel.text && typeof nodeModel.text.value === 'string') {
-                    nodeModel.text.x = data.x;
-                    nodeModel.text.y = data.y + 40;
+            eventBus.on('selection.changed', (e) => {
+                const element = e.newSelection[0];
+                if (element) {
+                    showProperties(element);
+                } else {
+                    hideProperties();
                 }
             });
-            
-            // 设置拖拽
-            setupDragAndDrop();
-            
-            // 加载流程列表
+
             loadProcessList();
         }
-        
-        // 设置拖拽功能（优化流畅度）
-        function setupDragAndDrop() {
-            const nodeItems = document.querySelectorAll('.node-item');
-            let draggedType = null;
+
+        function getSpiffProperties(element) {
+            const bo = element.businessObject;
+            const extensionElements = bo.extensionElements;
+            const properties = {};
             
-            nodeItems.forEach(item => {
-                item.addEventListener('dragstart', (e) => {
-                    draggedType = e.target.getAttribute('data-type');
-                    e.dataTransfer.effectAllowed = 'copy';
-                    e.dataTransfer.setData('text/plain', draggedType);
-                    e.target.style.opacity = '0.5';
-                });
+            if (extensionElements) {
+                const spiffProps = extensionElements.values.find(e => 
+                    e.$type === 'spiffworkflow:properties'
+                );
                 
-                item.addEventListener('dragend', (e) => {
-                    e.target.style.opacity = '1';
-                });
-            });
-            
-            const canvas = document.getElementById('canvas');
-            
-            canvas.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'copy';
-            });
-            
-            canvas.addEventListener('drop', (e) => {
-                e.preventDefault();
-                
-                if (draggedType && lf) {
-                    const point = lf.getPointByClient(e.clientX, e.clientY);
-                    lf.addNode({
-                        type: draggedType,
-                        x: point.x,
-                        y: point.y,
-                        text: getNodeDefaultText(draggedType),
-                        properties: {}
+                if (spiffProps && spiffProps.properties) {
+                    spiffProps.properties.forEach(prop => {
+                        properties[prop.name] = prop.value;
                     });
                 }
-                draggedType = null;
-            });
-        }
-        
-        // 获取节点默认文本
-        function getNodeDefaultText(type) {
-            const textMap = {
-                'bpmn:startEvent': '开始',
-                'bpmn:endEvent': '结束',
-                'bpmn:userTask': '用户任务',
-                'bpmn:serviceTask': '服务任务',
-                'bpmn:exclusiveGateway': '网关'
-            };
-            return textMap[type] || '';
-        }
-        
-        // 渲染初始图表
-        function renderInitialGraph() {
-            const graphData = {
-                nodes: [
-                    {
-                        id: 'start-1',
-                        type: 'bpmn:startEvent',
-                        x: 200,
-                        y: 200,
-                        text: '开始',
-                        properties: {
-                            name: '开始节点'
-                        }
-                    },
-                    {
-                        id: 'task-1',
-                        type: 'bpmn:userTask',
-                        x: 400,
-                        y: 200,
-                        text: '用户任务',
-                        properties: {
-                            name: '用户任务',
-                            formSchema: '',
-                            preScript: '',
-                            postScript: ''
-                        }
-                    },
-                    {
-                        id: 'end-1',
-                        type: 'bpmn:endEvent',
-                        x: 600,
-                        y: 200,
-                        text: '结束',
-                        properties: {
-                            name: '结束节点'
-                        }
-                    }
-                ],
-                edges: [
-                    {
-                        id: 'edge-1',
-                        type: 'bpmn:sequenceFlow',
-                        sourceNodeId: 'start-1',
-                        targetNodeId: 'task-1',
-                        text: '',
-                        properties: {
-                            condition: ''
-                        }
-                    },
-                    {
-                        id: 'edge-2',
-                        type: 'bpmn:sequenceFlow',
-                        sourceNodeId: 'task-1',
-                        targetNodeId: 'end-1',
-                        text: '',
-                        properties: {
-                            condition: ''
-                        }
-                    }
-                ]
-            };
+                
+                const preScript = extensionElements.values.find(e => 
+                    e.$type === 'spiffworkflow:preScript'
+                );
+                if (preScript) {
+                    properties.preScript = preScript.value || preScript.$body || '';
+                }
+                
+                const postScript = extensionElements.values.find(e => 
+                    e.$type === 'spiffworkflow:postScript'
+                );
+                if (postScript) {
+                    properties.postScript = postScript.value || postScript.$body || '';
+                }
+            }
             
-            lf.render(graphData);
+            return properties;
         }
-        
-        // 显示节点属性
-        function showProperties(node) {
-            document.getElementById('element-name').textContent = node.text || node.id;
+
+        function showProperties(element) {
+            const panel = document.getElementById('properties-panel');
+            panel.classList.add('show');
             
-            const props = node.properties || {};
+            const elementType = element.type || 'Unknown';
+            const elementName = element.businessObject.name || '';
+            const elementId = element.id;
+            const spiffProps = getSpiffProperties(element);
+            
             let html = `
+                <div class="properties-header">
+                    <h2>${elementName || elementId}</h2>
+                    <div class="element-type">${elementType}</div>
+                </div>
+                
                 <div class="property-group">
                     <h3>基本属性</h3>
                     <div class="property-item">
                         <label class="property-label">ID</label>
-                        <input type="text" class="property-input" value="${node.id}" readonly>
+                        <input type="text" class="property-input" value="${elementId}" readonly>
                     </div>
                     <div class="property-item">
                         <label class="property-label">名称</label>
-                        <input type="text" class="property-input" id="prop-name" value="${node.text || ''}" 
-                               onchange="updateNodeProperty('text', this.value)">
+                        <input type="text" class="property-input" value="${elementName}" 
+                               onchange="updateElementProperty('${elementId}', 'name', this.value)">
                     </div>
                     <div class="property-item">
-                        <label class="property-label">节点类型</label>
-                        <input type="text" class="property-input" value="${node.type}" readonly>
+                        <label class="property-label">类型</label>
+                        <input type="text" class="property-input" value="${elementType}" readonly>
                     </div>
                 </div>
             `;
             
-            // 用户任务特定属性
-            if (node.type === 'bpmn:userTask' || node.type === 'bpmn:serviceTask') {
+            // SpiffWorkflow 特定属性
+            if (elementType.includes('Task')) {
                 html += `
                     <div class="property-group">
-                        <h3>表单配置</h3>
+                        <h3>SpiffWorkflow 属性</h3>
                         <div class="property-item">
                             <label class="property-label">表单 Schema 文件</label>
-                            <input type="text" class="property-input" id="prop-form-schema" 
-                                   value="${props.formSchema || ''}"
-                                   onchange="updateNodeProperty('formSchema', this.value)">
+                            <input type="text" class="property-input" 
+                                   value="${spiffProps.formSchema || ''}"
+                                   onchange="updateSpiffProperty('${elementId}', 'formSchema', this.value)"
+                                   placeholder="例如: approval-form-schema.json">
+                        </div>
+                        <div class="property-item">
+                            <label class="property-label">任务分配人</label>
+                            <input type="text" class="property-input" 
+                                   value="${spiffProps.assignee || ''}"
+                                   onchange="updateSpiffProperty('${elementId}', 'assignee', this.value)"
+                                   placeholder="例如: dept_manager">
                         </div>
                     </div>
                     
@@ -617,9 +538,9 @@
                         <h3>前置脚本 (Python)</h3>
                         <div class="property-item">
                             <label class="property-label">在任务执行前运行</label>
-                            <div class="code-editor">
-                                <textarea id="pre-script-editor">${props.preScript || ''}</textarea>
-                            </div>
+                            <textarea class="property-textarea" 
+                                      onchange="updateSpiffScript('${elementId}', 'preScript', this.value)"
+                                      placeholder="# Python 代码\n# 例如: assignee = get_manager(dept)">${spiffProps.preScript || ''}</textarea>
                         </div>
                     </div>
                     
@@ -627,275 +548,174 @@
                         <h3>后置脚本 (Python)</h3>
                         <div class="property-item">
                             <label class="property-label">在任务完成后运行</label>
-                            <div class="code-editor">
-                                <textarea id="post-script-editor">${props.postScript || ''}</textarea>
-                            </div>
+                            <textarea class="property-textarea" 
+                                      onchange="updateSpiffScript('${elementId}', 'postScript', this.value)"
+                                      placeholder="# Python 代码\n# 例如: update_status(request_id, 'approved')">${spiffProps.postScript || ''}</textarea>
                         </div>
                     </div>
                 `;
             }
             
-            document.getElementById('properties-content').innerHTML = html;
-            
-            // 初始化代码编辑器
-            setTimeout(() => {
-                if (document.getElementById('pre-script-editor')) {
-                    initCodeEditor('pre-script-editor', 'python', (value) => {
-                        updateNodeProperty('preScript', value);
-                    });
-                }
-                if (document.getElementById('post-script-editor')) {
-                    initCodeEditor('post-script-editor', 'python', (value) => {
-                        updateNodeProperty('postScript', value);
-                    });
-                }
-            }, 100);
-        }
-        
-        // 显示边属性
-        function showEdgeProperties(edge) {
-            document.getElementById('element-name').textContent = '连线属性';
-            
-            const props = edge.properties || {};
-            const html = `
-                <div class="property-group">
-                    <h3>基本属性</h3>
-                    <div class="property-item">
-                        <label class="property-label">ID</label>
-                        <input type="text" class="property-input" value="${edge.id}" readonly>
-                    </div>
-                    <div class="property-item">
-                        <label class="property-label">文本</label>
-                        <input type="text" class="property-input" id="prop-edge-text" value="${edge.text || ''}" 
-                               onchange="updateEdgeProperty('text', this.value)">
-                    </div>
-                </div>
+            // 网关条件表达式
+            if (elementType.includes('SequenceFlow')) {
+                const conditionExpression = element.businessObject.conditionExpression;
+                const condition = conditionExpression ? conditionExpression.body : '';
                 
-                <div class="property-group">
-                    <h3>条件表达式 (Python)</h3>
-                    <div class="property-item">
-                        <label class="property-label">流转条件</label>
-                        <div class="code-editor">
-                            <textarea id="condition-editor">${props.condition || ''}</textarea>
+                html += `
+                    <div class="property-group">
+                        <h3>流转条件</h3>
+                        <div class="property-item">
+                            <label class="property-label">条件表达式 (Python)</label>
+                            <textarea class="property-textarea" 
+                                      onchange="updateConditionExpression('${elementId}', this.value)"
+                                      placeholder="# Python 表达式\n# 例如: leave_hours >= 24">${condition}</textarea>
                         </div>
                     </div>
-                </div>
-            `;
+                `;
+            }
             
-            document.getElementById('properties-content').innerHTML = html;
-            
-            // 初始化代码编辑器
-            setTimeout(() => {
-                if (document.getElementById('condition-editor')) {
-                    initCodeEditor('condition-editor', 'python', (value) => {
-                        updateEdgeProperty('condition', value);
-                    });
-                }
-            }, 100);
+            panel.innerHTML = html;
         }
-        
-        // 显示空状态
-        function showEmptyState() {
-            document.getElementById('element-name').textContent = '属性面板';
-            document.getElementById('properties-content').innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon">📋</div>
-                    <p>选择画布上的元素<br>查看和编辑属性</p>
-                </div>
-            `;
+
+        function hideProperties() {
+            const panel = document.getElementById('properties-panel');
+            panel.classList.remove('show');
         }
-        
-        // 初始化代码编辑器
-        function initCodeEditor(elementId, mode, onChange) {
-            const textarea = document.getElementById(elementId);
-            if (!textarea) return;
+
+        function updateElementProperty(elementId, property, value) {
+            const modeling = modeler.get('modeling');
+            const elementRegistry = modeler.get('elementRegistry');
+            const element = elementRegistry.get(elementId);
             
-            const editor = CodeMirror.fromTextArea(textarea, {
-                mode: mode,
-                theme: 'monokai',
-                lineNumbers: true,
-                lineWrapping: true,
-                indentUnit: 4,
-                tabSize: 4,
-                indentWithTabs: false,
-                autoCloseBrackets: true,
-                matchBrackets: true
-            });
-            
-            editor.on('change', function() {
-                if (onChange) {
-                    onChange(editor.getValue());
-                }
-            });
-            
-            codeEditors[elementId] = editor;
+            if (element) {
+                modeling.updateProperties(element, {
+                    [property]: value
+                });
+            }
         }
-        
-        // 更新节点属性
-        function updateNodeProperty(property, value) {
-            if (!currentElement) return;
+
+        function updateSpiffProperty(elementId, propertyName, value) {
+            const modeling = modeler.get('modeling');
+            const elementRegistry = modeler.get('elementRegistry');
+            const bpmnFactory = modeler.get('bpmnFactory');
+            const element = elementRegistry.get(elementId);
             
-            if (property === 'text') {
-                lf.setProperties(currentElement.id, { ...currentElement.properties });
-                lf.updateText(currentElement.id, value);
+            if (!element) return;
+            
+            const bo = element.businessObject;
+            let extensionElements = bo.extensionElements;
+            
+            if (!extensionElements) {
+                extensionElements = bpmnFactory.create('bpmn:ExtensionElements');
+            }
+            
+            let spiffProps = extensionElements.values?.find(e => 
+                e.$type === 'spiffworkflow:properties'
+            );
+            
+            if (!spiffProps) {
+                spiffProps = bpmnFactory.create('spiffworkflow:properties', {
+                    properties: []
+                });
+                extensionElements.values = extensionElements.values || [];
+                extensionElements.values.push(spiffProps);
+            }
+            
+            let prop = spiffProps.properties?.find(p => p.name === propertyName);
+            
+            if (!prop) {
+                prop = bpmnFactory.create('spiffworkflow:property', {
+                    name: propertyName,
+                    value: value
+                });
+                spiffProps.properties = spiffProps.properties || [];
+                spiffProps.properties.push(prop);
             } else {
-                const newProperties = { ...currentElement.properties, [property]: value };
-                lf.setProperties(currentElement.id, newProperties);
-                currentElement.properties = newProperties;
+                prop.value = value;
             }
-        }
-        
-        // 更新边属性
-        function updateEdgeProperty(property, value) {
-            if (!currentElement) return;
             
-            if (property === 'text') {
-                lf.updateText(currentElement.id, value);
-            } else {
-                const newProperties = { ...currentElement.properties, [property]: value };
-                lf.setProperties(currentElement.id, newProperties);
-                currentElement.properties = newProperties;
-            }
-        }
-        
-        // 保存图表
-        function saveDiagram() {
-            const graphData = lf.getGraphData();
-            console.log('保存的图表数据:', graphData);
-            
-            fetch('/api/bpmn/save/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(graphData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert('保存成功！');
-            })
-            .catch(error => {
-                console.error('保存失败:', error);
-                alert('保存失败: ' + error.message);
+            modeling.updateProperties(element, {
+                extensionElements: extensionElements
             });
         }
-        
-        // 查看 XML
-        function viewXML() {
-            if (!lf) {
-                alert('流程设计器未初始化');
-                return;
+
+        function updateSpiffScript(elementId, scriptType, value) {
+            const modeling = modeler.get('modeling');
+            const elementRegistry = modeler.get('elementRegistry');
+            const bpmnFactory = modeler.get('bpmnFactory');
+            const element = elementRegistry.get(elementId);
+            
+            if (!element) return;
+            
+            const bo = element.businessObject;
+            let extensionElements = bo.extensionElements;
+            
+            if (!extensionElements) {
+                extensionElements = bpmnFactory.create('bpmn:ExtensionElements');
             }
-            const graphData = lf.getGraphData();
-            if (!graphData || (!graphData.nodes && !graphData.edges)) {
-                alert('当前画布为空，无法生成XML');
-                return;
+            
+            const existingScript = extensionElements.values?.find(e => 
+                e.$type === `spiffworkflow:${scriptType}`
+            );
+            
+            if (existingScript) {
+                extensionElements.values = extensionElements.values.filter(e => 
+                    e.$type !== `spiffworkflow:${scriptType}`
+                );
             }
-            const xmlContent = generateBPMNXML(graphData);
             
-            // 创建模态框显示XML
-            const modal = document.createElement('div');
-            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;';
+            if (value.trim()) {
+                const script = bpmnFactory.create(`spiffworkflow:${scriptType}`);
+                script.$body = value;
+                extensionElements.values = extensionElements.values || [];
+                extensionElements.values.push(script);
+            }
             
-            const content = document.createElement('div');
-            content.style.cssText = 'background:#2d2d2d;width:80%;height:80%;border-radius:8px;display:flex;flex-direction:column;';
-            
-            const header = document.createElement('div');
-            header.style.cssText = 'padding:15px 20px;background:#1e1e1e;border-bottom:1px solid #444;display:flex;justify-content:space-between;align-items:center;border-radius:8px 8px 0 0;';
-            header.innerHTML = '<h3 style="margin:0;color:#fff;">BPMN XML</h3><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:#667eea;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">关闭</button>';
-            
-            const editorDiv = document.createElement('div');
-            editorDiv.style.cssText = 'flex:1;overflow:hidden;';
-            const textarea = document.createElement('textarea');
-            textarea.value = xmlContent;
-            editorDiv.appendChild(textarea);
-            
-            content.appendChild(header);
-            content.appendChild(editorDiv);
-            modal.appendChild(content);
-            document.body.appendChild(modal);
-            
-            // 初始化代码编辑器
-            setTimeout(() => {
-                const editor = CodeMirror.fromTextArea(textarea, {
-                    mode: 'xml',
-                    theme: 'monokai',
-                    lineNumbers: true,
-                    readOnly: true,
-                    lineWrapping: true
-                });
-                editor.setSize('100%', '100%');
-            }, 100);
+            modeling.updateProperties(element, {
+                extensionElements: extensionElements
+            });
         }
-        
-        // 生成BPMN XML
-        function generateBPMNXML(graphData) {
-            let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-            xml += '<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI">\n';
-            xml += '  <bpmn:process id="Process_1" isExecutable="true">\n';
+
+        function updateConditionExpression(elementId, value) {
+            const modeling = modeler.get('modeling');
+            const elementRegistry = modeler.get('elementRegistry');
+            const bpmnFactory = modeler.get('bpmnFactory');
+            const element = elementRegistry.get(elementId);
             
-            if (graphData.nodes && graphData.nodes.length > 0) {
-                graphData.nodes.forEach(node => {
-                    const nodeType = node.type.split(':')[1];
-                    xml += `    <bpmn:${nodeType} id="${node.id}" name="${node.text || ''}">\n`;
-                    if (node.properties) {
-                        Object.entries(node.properties).forEach(([key, value]) => {
-                            if (value) xml += `      <bpmn:extensionElements><property name="${key}">${value}</property></bpmn:extensionElements>\n`;
-                        });
-                    }
-                    xml += `    </bpmn:${nodeType}>\n`;
+            if (!element) return;
+            
+            let conditionExpression = null;
+            
+            if (value.trim()) {
+                conditionExpression = bpmnFactory.create('bpmn:FormalExpression', {
+                    body: value
                 });
             }
             
-            if (graphData.edges && graphData.edges.length > 0) {
-                graphData.edges.forEach(edge => {
-                    xml += `    <bpmn:sequenceFlow id="${edge.id}" sourceRef="${edge.sourceNodeId}" targetRef="${edge.targetNodeId}"`;
-                    if (edge.text) xml += ` name="${edge.text}"`;
-                    xml += ' />\n';
-                });
+            modeling.updateProperties(element, {
+                conditionExpression: conditionExpression
+            });
+        }
+
+        async function loadProcessList() {
+            try {
+                const response = await fetch('/api/bpmn/processes/');
+                const data = await response.json();
+                processList = data.processes || [];
+                renderProcessList();
+                
+                if (processList.length > 0) {
+                    loadProcess(processList[0].id);
+                } else {
+                    await modeler.importXML(defaultDiagram);
+                }
+            } catch (error) {
+                console.error('加载流程列表失败:', error);
+                document.getElementById('process-list').innerHTML = '<div class="empty-list">加载失败</div>';
+                await modeler.importXML(defaultDiagram);
             }
-            
-            xml += '  </bpmn:process>\n';
-            xml += '</bpmn:definitions>';
-            return xml;
         }
-        
-        // 下载 JSON
-        function downloadJSON() {
-            const graphData = lf.getGraphData();
-            const dataStr = JSON.stringify(graphData, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'bpmn-flow-' + Date.now() + '.json';
-            link.click();
-            
-            URL.revokeObjectURL(url);
-        }
-        
-        // 加载流程列表
-        function loadProcessList() {
-            fetch('/api/bpmn/processes/')
-                .then(response => response.json())
-                .then(data => {
-                    processList = data.processes || [];
-                    renderProcessList();
-                    if (processList.length > 0) {
-                        loadProcess(processList[0].id);
-                    } else {
-                        renderInitialGraph();
-                    }
-                })
-                .catch(error => {
-                    console.error('加载流程列表失败:', error);
-                    document.getElementById('process-list').innerHTML = '<div class="empty-list">加载失败</div>';
-                    renderInitialGraph();
-                });
-        }
-        
-        // 渲染流程列表
+
         function renderProcessList() {
             const listEl = document.getElementById('process-list');
             if (processList.length === 0) {
@@ -912,209 +732,109 @@
                 </div>
             `).join('');
         }
-        
-        // 自定义BPMN解析函数
-        function parseSpiffBPMN(xmlString) {
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
-            
-            const nodes = [];
-            const edges = [];
-            
-            // 解析节点
-            const process = xmlDoc.querySelector('process');
-            if (!process) return { nodes, edges };
-            
-            // 解析开始事件
-            process.querySelectorAll('startEvent').forEach(node => {
-                const shape = xmlDoc.querySelector(`BPMNShape[bpmnElement="${node.id}"]`);
-                if (shape) {
-                    const bounds = shape.querySelector('Bounds');
-                    nodes.push({
-                        id: node.id,
-                        type: 'bpmn:startEvent',
-                        x: parseFloat(bounds.getAttribute('x')) + parseFloat(bounds.getAttribute('width')) / 2,
-                        y: parseFloat(bounds.getAttribute('y')) + parseFloat(bounds.getAttribute('height')) / 2,
-                        text: node.getAttribute('name') || '开始',
-                        properties: {}
-                    });
-                }
-            });
-            
-            // 解析用户任务
-            process.querySelectorAll('userTask').forEach(node => {
-                const shape = xmlDoc.querySelector(`BPMNShape[bpmnElement="${node.id}"]`);
-                if (shape) {
-                    const bounds = shape.querySelector('Bounds');
-                    const props = {};
-                    node.querySelectorAll('property').forEach(prop => {
-                        props[prop.getAttribute('name')] = prop.textContent;
-                    });
-                    nodes.push({
-                        id: node.id,
-                        type: 'bpmn:userTask',
-                        x: parseFloat(bounds.getAttribute('x')) + parseFloat(bounds.getAttribute('width')) / 2,
-                        y: parseFloat(bounds.getAttribute('y')) + parseFloat(bounds.getAttribute('height')) / 2,
-                        text: node.getAttribute('name') || '用户任务',
-                        properties: props
-                    });
-                }
-            });
-            
-            // 解析服务任务
-            process.querySelectorAll('serviceTask').forEach(node => {
-                const shape = xmlDoc.querySelector(`BPMNShape[bpmnElement="${node.id}"]`);
-                if (shape) {
-                    const bounds = shape.querySelector('Bounds');
-                    nodes.push({
-                        id: node.id,
-                        type: 'bpmn:serviceTask',
-                        x: parseFloat(bounds.getAttribute('x')) + parseFloat(bounds.getAttribute('width')) / 2,
-                        y: parseFloat(bounds.getAttribute('y')) + parseFloat(bounds.getAttribute('height')) / 2,
-                        text: node.getAttribute('name') || '服务任务',
-                        properties: {}
-                    });
-                }
-            });
-            
-            // 解析网关
-            process.querySelectorAll('exclusiveGateway').forEach(node => {
-                const shape = xmlDoc.querySelector(`BPMNShape[bpmnElement="${node.id}"]`);
-                if (shape) {
-                    const bounds = shape.querySelector('Bounds');
-                    nodes.push({
-                        id: node.id,
-                        type: 'bpmn:exclusiveGateway',
-                        x: parseFloat(bounds.getAttribute('x')) + parseFloat(bounds.getAttribute('width')) / 2,
-                        y: parseFloat(bounds.getAttribute('y')) + parseFloat(bounds.getAttribute('height')) / 2,
-                        text: node.getAttribute('name') || '网关',
-                        properties: {}
-                    });
-                }
-            });
-            
-            // 解析结束事件
-            process.querySelectorAll('endEvent').forEach(node => {
-                const shape = xmlDoc.querySelector(`BPMNShape[bpmnElement="${node.id}"]`);
-                if (shape) {
-                    const bounds = shape.querySelector('Bounds');
-                    nodes.push({
-                        id: node.id,
-                        type: 'bpmn:endEvent',
-                        x: parseFloat(bounds.getAttribute('x')) + parseFloat(bounds.getAttribute('width')) / 2,
-                        y: parseFloat(bounds.getAttribute('y')) + parseFloat(bounds.getAttribute('height')) / 2,
-                        text: node.getAttribute('name') || '结束',
-                        properties: {}
-                    });
-                }
-            });
-            
-            // 解析连线
-            process.querySelectorAll('sequenceFlow').forEach(edge => {
-                const edgeEl = xmlDoc.querySelector(`BPMNEdge[bpmnElement="${edge.id}"]`);
-                if (edgeEl) {
-                    const waypoints = Array.from(edgeEl.querySelectorAll('waypoint')).map(wp => ({
-                        x: parseFloat(wp.getAttribute('x')),
-                        y: parseFloat(wp.getAttribute('y'))
-                    }));
-                    edges.push({
-                        id: edge.id,
-                        type: 'bpmn:sequenceFlow',
-                        sourceNodeId: edge.getAttribute('sourceRef'),
-                        targetNodeId: edge.getAttribute('targetRef'),
-                        text: edge.getAttribute('name') || '',
-                        properties: {},
-                        pointsList: waypoints
-                    });
-                }
-            });
-            
-            return { nodes, edges };
-        }
-        
-        // 加载流程
-        function loadProcess(processId) {
+
+        async function loadProcess(processId) {
             currentProcessId = processId;
-            fetch(`/api/bpmn/processes/${processId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.xml) {
-                        try {
-                            const customData = parseSpiffBPMN(data.xml);
-                            console.log('解析的节点:', customData.nodes);
-                            console.log('解析的连线:', customData.edges);
-                            
-                            if (customData.nodes.length > 0) {
-                                lf.render(customData);
-                            } else {
-                                console.error('未能解析出节点');
-                                renderInitialGraph();
-                            }
-                        } catch (e) {
-                            console.error('解析BPMN失败:', e);
-                            renderInitialGraph();
-                        }
-                    } else {
-                        renderInitialGraph();
-                    }
-                    renderProcessList();
-                })
-                .catch(error => {
-                    console.error('加载流程失败:', error);
-                    alert('加载流程失败: ' + error.message);
+            try {
+                const response = await fetch(`/api/bpmn/processes/${processId}/`);
+                const data = await response.json();
+                
+                if (data.xml) {
+                    await modeler.importXML(data.xml);
+                } else {
+                    await modeler.importXML(defaultDiagram);
+                }
+                renderProcessList();
+            } catch (error) {
+                console.error('加载流程失败:', error);
+                alert('加载流程失败: ' + error.message);
+            }
+        }
+
+        async function saveDiagram() {
+            try {
+                const { xml } = await modeler.saveXML({ format: true });
+                
+                if (!currentProcessId) {
+                    alert('请先选择或创建一个流程');
+                    return;
+                }
+                
+                const response = await fetch(`/api/bpmn/processes/${currentProcessId}/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ xml })
                 });
+                
+                const data = await response.json();
+                alert('保存成功！');
+            } catch (error) {
+                console.error('保存失败:', error);
+                alert('保存失败: ' + error.message);
+            }
+        }
+
+        async function viewXML() {
+            try {
+                const { xml } = await modeler.saveXML({ format: true });
+                document.getElementById('xmlContent').textContent = xml;
+                document.getElementById('xmlModal').classList.add('show');
+            } catch (error) {
+                console.error('查看XML失败:', error);
+                alert('查看XML失败: ' + error.message);
+            }
         }
         
-        // 删除流程
-        function deleteProcess(processId) {
+        function closeXMLModal() {
+            document.getElementById('xmlModal').classList.remove('show');
+        }
+
+        async function deleteProcess(processId) {
             if (!confirm('确定要删除这个流程吗？')) return;
             
-            fetch(`/api/bpmn/processes/${processId}/`, {
-                method: 'DELETE'
-            })
-            .then(response => response.json())
-            .then(data => {
+            try {
+                await fetch(`/api/bpmn/processes/${processId}/`, {
+                    method: 'DELETE'
+                });
                 alert('删除成功');
                 loadProcessList();
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('删除失败:', error);
                 alert('删除失败: ' + error.message);
-            });
+            }
         }
-        
-        // 创建新流程
-        function createNewProcess() {
+
+        async function createNewProcess() {
             const name = prompt('请输入流程名称:');
             if (!name) return;
             
-            const graphData = lf.getGraphData();
-            const xml = generateBPMNXML(graphData);
-            
-            fetch('/api/bpmn/processes/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: name,
-                    description: '',
-                    group: 'custom',
-                    xml: xml
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
+            try {
+                const { xml } = await modeler.saveXML({ format: true });
+                
+                const response = await fetch('/api/bpmn/processes/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: name,
+                        description: '',
+                        group: 'custom',
+                        xml: xml
+                    })
+                });
+                
+                await response.json();
                 alert('创建成功');
                 loadProcessList();
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('创建失败:', error);
                 alert('创建失败: ' + error.message);
-            });
+            }
         }
-        
-        // 页面加载完成后初始化
+
         window.addEventListener('DOMContentLoaded', () => {
-            initLogicFlow();
+            initBpmnModeler();
         });
     </script>
 </body>

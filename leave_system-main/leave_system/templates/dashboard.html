@@ -3,225 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>审批流程管理系统</title>
+    <title>请假审批系统 - 控制台</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.6; }
-        .app { min-height: 100vh; display: flex; flex-direction: column; }
-        .header { background: white; border-bottom: 1px solid #e2e8f0; padding: 1rem 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .header-content { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-        .header h1 { font-size: 1.5rem; font-weight: 600; color: #1e293b; }
-        .nav { display: flex; gap: 2rem; }
-        .nav-link { color: #64748b; text-decoration: none; font-weight: 500; padding: 0.5rem 0; border-bottom: 2px solid transparent; transition: all 0.2s; cursor: pointer; }
-        .nav-link:hover, .nav-link.active { color: #3b82f6; border-bottom-color: #3b82f6; }
-        .main { flex: 1; max-width: 1400px; margin: 0 auto; padding: 2rem; width: 100%; }
-        .page { display: none; }
-        .page.active { display: block; }
-        .page-title { font-size: 2rem; font-weight: 700; color: #1e293b; margin-bottom: 2rem; }
-        .grid { display: grid; gap: 2rem; }
-        .grid-2 { grid-template-columns: 300px 1fr; }
-        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
-        .card { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
-        .card-title { font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-        .stat-card { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; text-align: center; }
-        .stat-value { font-size: 2rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.5rem; }
-        .stat-label { color: #64748b; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; }
-        .form-group { margin-bottom: 1rem; }
-        .form-label { display: block; margin-bottom: 0.5rem; color: #374151; font-weight: 500; }
-        .form-input, .form-select, .form-textarea { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.875rem; transition: border-color 0.2s; }
-        .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
-        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-        .btn-primary { background: #3b82f6; color: white; }
-        .btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
-        .btn-success { background: #10b981; color: white; }
-        .btn-outline { background: white; color: #374151; border: 1px solid #d1d5db; }
-        .btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; }
-        .table { width: 100%; border-collapse: collapse; }
-        .table th, .table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
-        .table th { background: #f8fafc; color: #374151; font-weight: 600; font-size: 0.875rem; }
-        .table tr:hover { background: #f8fafc; }
-        .badge { display: inline-flex; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
-        .badge-pending { background: #fef3c7; color: #92400e; }
-        .badge-approved { background: #d1fae5; color: #065f46; }
-        .badge-rejected { background: #fee2e2; color: #991b1b; }
-        .loading { text-align: center; padding: 2rem; color: #64748b; }
-        .alert { padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
-        .alert-success { background: #d1fae5; color: #065f46; border-left: 4px solid #10b981; }
-        .alert-error { background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
-        .designer-layout { display: grid; grid-template-columns: 300px 1fr; gap: 2rem; height: calc(100vh - 200px); }
-        .designer-sidebar { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; overflow-y: auto; }
-        .designer-main { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; }
-        .designer-toolbar { display: flex; gap: 1rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #e2e8f0; }
-        .designer-canvas { flex: 1; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; justify-content: center; color: #64748b; }
-        .history-item { padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 1rem; cursor: pointer; transition: all 0.2s; }
-        .history-item:hover { background: #f8fafc; border-color: #3b82f6; }
-        .history-item.active { background: #eff6ff; border-color: #3b82f6; }
-        .history-title { font-weight: 600; color: #1e293b; margin-bottom: 0.5rem; }
-        .history-meta { color: #64748b; font-size: 0.875rem; }
-        .api-method { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
-        .method-get { background: #dbeafe; color: #1e40af; }
-        .method-post { background: #d1fae5; color: #065f46; }
-        .code-block { background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 8px; overflow-x: auto; font-family: monospace; font-size: 0.875rem; }
-        .response-viewer { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; font-family: monospace; font-size: 0.875rem; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
-        @media (max-width: 768px) { .header-content { flex-direction: column; gap: 1rem; } .nav { flex-wrap: wrap; gap: 1rem; } .main { padding: 1rem; } .grid-2, .designer-layout { grid-template-columns: 1fr; } }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+        
+        .header h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 35px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .card-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+        }
+        
+        .card-description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .card-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+        
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 50px;
+            opacity: 0.8;
+        }
+        
+        .footer a {
+            color: white;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
-    <div class="app">
-        <header class="header">
-            <div class="header-content">
-                <h1>审批流程管理系统</h1>
-                <nav class="nav">
-                    <a class="nav-link active" onclick="showPage('home')">首页</a>
-                    <a class="nav-link" onclick="showPage('designer')">流程设计器</a>
-                    <a class="nav-link" onclick="showPage('api')">API 调试</a>
-                    <a class="nav-link" onclick="showPage('docs')">文档</a>
-                </nav>
-            </div>
-        </header>
-
-        <main class="main">
-            <!-- 首页 -->
-            <div id="page-home" class="page active">
-                <h2 class="page-title">工作台</h2>
-                <div class="stats-grid">
-                    <div class="stat-card"><div class="stat-value" id="stat-pending">-</div><div class="stat-label">待审批</div></div>
-                    <div class="stat-card"><div class="stat-value" id="stat-approved">-</div><div class="stat-label">已批准</div></div>
-                    <div class="stat-card"><div class="stat-value" id="stat-rejected">-</div><div class="stat-label">已拒绝</div></div>
-                    <div class="stat-card"><div class="stat-value" id="stat-total">-</div><div class="stat-label">总申请</div></div>
+    <div class="container">
+        <div class="header">
+            <h1>🏢 请假审批系统</h1>
+            <p>欢迎使用基于 SpiffWorkflow 的智能审批系统</p>
+        </div>
+        
+        <div class="cards-grid">
+            <a href="/bpmn-designer/" class="card">
+                <div class="card-icon">🎨</div>
+                <div class="card-title">BPMN 流程设计器</div>
+                <div class="card-description">
+                    可视化设计和编辑 BPMN 工作流程，支持拖拽式操作，实时预览流程图
                 </div>
-                <div class="grid grid-3">
-                    <div class="card">
-                        <h3 class="card-title">创建申请</h3>
-                        <div class="form-group"><label class="form-label">申请类型</label><select id="request-type" class="form-select" onchange="updateFormFields()"><option value="leave">请假申请</option><option value="password_change">密码修改</option></select></div>
-                        <div class="form-row"><div class="form-group"><label class="form-label">申请人邮箱</label><input type="email" id="user-email" class="form-input" placeholder="user@company.com"></div><div class="form-group"><label class="form-label">姓名</label><input type="text" id="staff-name" class="form-input" placeholder="张三"></div></div>
-                        <div class="form-group"><label class="form-label">部门</label><input type="text" id="staff-dept" class="form-input" placeholder="技术部"></div>
-                        <div id="leave-fields"><div class="form-row"><div class="form-group"><label class="form-label">请假类型</label><select id="leave-type" class="form-select"><option value="annual">年假</option><option value="sick">病假</option><option value="personal">事假</option></select></div><div class="form-group"><label class="form-label">时长(小时)</label><input type="number" id="leave-hours" class="form-input" value="8"></div></div></div>
-                        <div id="password-fields" style="display: none;"><div class="form-row"><div class="form-group"><label class="form-label">密码类型</label><select id="password-type" class="form-select"><option value="normal">普通密码</option><option value="important">重要密码</option><option value="critical">关键密码</option></select></div><div class="form-group"><label class="form-label">用户级别</label><select id="user-level" class="form-select"><option value="normal">普通用户</option><option value="admin">管理员</option></select></div></div><div class="form-group"><label class="form-label">系统名称</label><input type="text" id="system-name" class="form-input" placeholder="企业邮箱系统"></div></div>
-                        <div class="form-group"><label class="form-label">申请原因</label><textarea id="reason" class="form-textarea" rows="3" placeholder="请详细说明..."></textarea></div>
-                        <div id="create-alert"></div>
-                        <button class="btn btn-primary" onclick="createRequest()">提交申请</button>
-                    </div>
-                    <div class="card">
-                        <h3 class="card-title">我的申请</h3>
-                        <div class="form-group"><input type="email" id="my-email" class="form-input" placeholder="输入邮箱查询"></div>
-                        <button class="btn btn-primary" onclick="loadMyRequests()">查询</button>
-                        <div id="my-requests-content" style="margin-top: 1rem;"><div class="loading">请输入邮箱并点击查询</div></div>
-                    </div>
-                    <div class="card">
-                        <h3 class="card-title">待审批任务</h3>
-                        <div class="form-group"><input type="email" id="approver-email" class="form-input" placeholder="审批人邮箱"></div>
-                        <button class="btn btn-primary" onclick="loadPendingApprovals()">查询</button>
-                        <div id="pending-content" style="margin-top: 1rem;"><div class="loading">请输入审批人邮箱并点击查询</div></div>
-                    </div>
+                <span class="card-badge">设计工具</span>
+            </a>
+            
+            <a href="/test-workflow/" class="card">
+                <div class="card-icon">🧪</div>
+                <div class="card-title">流程集成测试</div>
+                <div class="card-description">
+                    完整测试请假申请、审批、查询等功能，验证整个工作流程的集成
                 </div>
-            </div>
-
-            <!-- 流程设计器页面 -->
-            <div id="page-designer" class="page">
-                <h2 class="page-title">流程设计器</h2>
-                <div class="designer-layout">
-                    <div class="designer-sidebar">
-                        <h3 class="card-title" style="margin-bottom: 1rem;">历史审批流程</h3>
-                        <div id="history-list"><div class="loading">加载中...</div></div>
-                    </div>
-                    <div class="designer-main">
-                        <div class="designer-toolbar">
-                            <button class="btn btn-primary" onclick="window.open('/bpmn-designer/', '_blank')">打开 BPMN 设计器</button>
-                            <button class="btn btn-outline" onclick="loadBpmnProcesses()">刷新流程列表</button>
-                            <button class="btn btn-success" onclick="saveCurrentProcess()">保存</button>
-                        </div>
-                        <div class="designer-canvas"><div style="text-align: center;"><p style="font-size: 1.5rem; margin-bottom: 1rem;">🎨</p><p>从左侧选择一个流程开始编辑</p><button class="btn btn-primary" style="margin-top: 1rem;" onclick="window.open('/bpmn-designer/', '_blank')">打开专业设计器</button></div></div>
-                    </div>
+                <span class="card-badge">测试工具</span>
+            </a>
+            
+            <a href="/api-info/" class="card">
+                <div class="card-icon">📡</div>
+                <div class="card-title">API 接口文档</div>
+                <div class="card-description">
+                    查看所有可用的 REST API 接口，包括请假申请、审批、查询等功能
                 </div>
-            </div>
-
-            <!-- API 调试页面 -->
-            <div id="page-api" class="page">
-                <h2 class="page-title">API 调试工具</h2>
-                <div class="grid grid-2">
-                    <div class="card">
-                        <h3 class="card-title">请求配置</h3>
-                        <div class="form-group"><label class="form-label">请求方法</label><select id="api-method" class="form-select"><option value="GET">GET</option><option value="POST">POST</option><option value="PUT">PUT</option><option value="DELETE">DELETE</option></select></div>
-                        <div class="form-group"><label class="form-label">API 端点</label><select id="api-endpoint" class="form-select" onchange="updateApiExample()"><option value="/api/leave/create/">POST /api/leave/create/ - 创建申请</option><option value="/api/leave/my-requests/">GET /api/leave/my-requests/ - 我的申请</option><option value="/api/leave/pending-approvals/">GET /api/leave/pending-approvals/ - 待审批</option><option value="/api/leave/approve/">POST /api/leave/approve/ - 批准申请</option><option value="/api/leave/reject/">POST /api/leave/reject/ - 拒绝申请</option></select></div>
-                        <div class="form-group"><label class="form-label">请求参数 (JSON)</label><textarea id="api-params" class="form-textarea" rows="10" style="font-family: monospace;">{"user_email": "user@company.com","staff_full_name": "张三","staff_dept": "技术部","reason": "测试申请","leave_hours": 8,"leave_type": "annual"}</textarea></div>
-                        <button class="btn btn-primary" onclick="sendApiRequest()">发送请求</button>
-                        <button class="btn btn-outline" onclick="clearApiResponse()">清空响应</button>
-                    </div>
-                    <div class="card">
-                        <h3 class="card-title">响应结果</h3>
-                        <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 1rem;" id="api-status">等待请求...</p>
-                        <div class="response-viewer" id="api-response">等待发送请求...</div>
-                        <div style="margin-top: 2rem;"><h4 style="margin-bottom: 1rem;">API 文档</h4><div style="max-height: 300px; overflow-y: auto;"><div style="margin-bottom: 1rem; padding: 1rem; background: #f8fafc; border-radius: 8px;"><div style="margin-bottom: 0.5rem;"><span class="api-method method-post">POST</span><code style="margin-left: 0.5rem;">/api/leave/create/</code></div><p style="font-size: 0.875rem; color: #64748b;">创建请假或密码修改申请</p></div></div></div>
-                    </div>
+                <span class="card-badge">API 文档</span>
+            </a>
+            
+            <a href="/admin/" class="card">
+                <div class="card-icon">⚙️</div>
+                <div class="card-title">系统管理后台</div>
+                <div class="card-description">
+                    Django 管理后台，管理用户、组织架构、审批规则等系统配置
                 </div>
-            </div>
-
-            <!-- 文档页面 -->
-            <div id="page-docs" class="page">
-                <h2 class="page-title">系统文档</h2>
-                <div class="grid grid-3">
-                    <div class="card"><h3 class="card-title">快速开始</h3><p style="color: #64748b; margin-bottom: 1rem;">了解如何快速使用系统</p><ul style="margin-left: 1.5rem; line-height: 1.8;"><li>创建第一个申请</li><li>审批流程说明</li><li>常见问题解答</li></ul></div>
-                    <div class="card"><h3 class="card-title">配置教程</h3><p style="color: #64748b; margin-bottom: 1rem;">学习如何配置审批流程</p><ul style="margin-left: 1.5rem; line-height: 1.8;"><li>BPMN 流程设计</li><li>多级审批配置</li><li>分支路由设置</li></ul></div>
-                    <div class="card"><h3 class="card-title">测试账号</h3><p style="color: #64748b; margin-bottom: 1rem;">用于测试的账号信息</p><div class="code-block">申请人: user1@company.com<br>审批人: manager@company.com<br>IT主管: it_security@company.com</div></div>
-                </div>
-            </div>
-        </main>
+                <span class="card-badge">管理工具</span>
+            </a>
+        </div>
+        
+        <div class="footer">
+            <p>基于 Django + SpiffWorkflow + BPMN.js 构建</p>
+            <p style="margin-top: 10px;">
+                <a href="https://github.com/sartography/SpiffWorkflow" target="_blank">SpiffWorkflow 文档</a> | 
+                <a href="https://bpmn.io/" target="_blank">BPMN.js 官网</a>
+            </p>
+        </div>
     </div>
-
-    <script>
-        const API_BASE = '/api';
-        function showPage(page) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            document.getElementById('page-' + page).classList.add('active');
-            event.target.classList.add('active');
-            if (page === 'designer') loadBpmnProcesses();
-        }
-        function updateFormFields() {
-            const type = document.getElementById('request-type').value;
-            document.getElementById('leave-fields').style.display = type === 'leave' ? 'block' : 'none';
-            document.getElementById('password-fields').style.display = type === 'password_change' ? 'block' : 'none';
-        }
-        async function createRequest() {
-            const type = document.getElementById('request-type').value;
-            const data = {user_email: document.getElementById('user-email').value, staff_full_name: document.getElementById('staff-name').value, staff_dept: document.getElementById('staff-dept').value, reason: document.getElementById('reason').value};
-            if (type === 'leave') {data.leave_hours = parseInt(document.getElementById('leave-hours').value) || 8; data.leave_type = document.getElementById('leave-type').value;} else {data.leave_hours = 0; data.password_type = document.getElementById('password-type').value; data.user_level = document.getElementById('user-level').value; data.system_name = document.getElementById('system-name').value;}
-            try {const res = await fetch(`${API_BASE}/leave/create/`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)}); const result = await res.json(); document.getElementById('create-alert').innerHTML = result.success ? `<div class="alert alert-success">✅ 申请创建成功！<br>申请ID: ${result.leave_request_id}</div>` : `<div class="alert alert-error">❌ ${result.error}</div>`;} catch (e) {document.getElementById('create-alert').innerHTML = `<div class="alert alert-error">❌ 请求失败: ${e.message}</div>`;}
-        }
-        async function loadMyRequests() {
-            const email = document.getElementById('my-email').value;
-            if (!email) return;
-            const div = document.getElementById('my-requests-content');
-            div.innerHTML = '<div class="loading">加载中...</div>';
-            try {const res = await fetch(`${API_BASE}/leave/my-requests/?user_email=${email}`); const result = await res.json(); if (result.success && result.requests.length > 0) {div.innerHTML = `<table class="table"><thead><tr><th>ID</th><th>类型</th><th>状态</th><th>时间</th></tr></thead><tbody>${result.requests.map(r => `<tr><td>${r.id}</td><td>${r.leave_type || r.password_type || '-'}</td><td><span class="badge badge-${r.status}">${r.status_display}</span></td><td>${new Date(r.created_at).toLocaleString('zh-CN')}</td></tr>`).join('')}</tbody></table>`;} else {div.innerHTML = '<div class="loading">暂无申请记录</div>';}} catch (e) {div.innerHTML = `<div class="alert alert-error">加载失败: ${e.message}</div>`;}
-        }
-        async function loadPendingApprovals() {
-            const email = document.getElementById('approver-email').value;
-            if (!email) return;
-            const div = document.getElementById('pending-content');
-            div.innerHTML = '<div class="loading">加载中...</div>';
-            try {const res = await fetch(`${API_BASE}/leave/pending-approvals/?user_email=${email}`); const result = await res.json(); if (result.success && result.tasks.length > 0) {div.innerHTML = `<table class="table"><thead><tr><th>任务</th><th>申请人</th><th>部门</th></tr></thead><tbody>${result.tasks.map(t => `<tr><td>${t.name}</td><td>${t.leave_request.staff_full_name}</td><td>${t.leave_request.staff_dept}</td></tr>`).join('')}</tbody></table>`;} else {div.innerHTML = '<div class="loading">暂无待审批任务</div>';}} catch (e) {div.innerHTML = `<div class="alert alert-error">加载失败: ${e.message}</div>`;}
-        }
-        async function loadBpmnProcesses() {
-            const div = document.getElementById('history-list');
-            div.innerHTML = '<div class="loading">加载中...</div>';
-            try {const res = await fetch(`${API_BASE}/bpmn/processes/`); const result = await res.json(); if (result.success && result.processes.length > 0) {div.innerHTML = result.processes.map(p => `<div class="history-item" onclick="selectProcess('${p.id}')"><div class="history-title">${p.display_name || p.id}</div><div class="history-meta">${p.id}</div></div>`).join('');} else {div.innerHTML = '<div class="loading">暂无流程</div>';}} catch (e) {div.innerHTML = `<div class="alert alert-error">加载失败: ${e.message}</div>`;}
-        }
-        function selectProcess(id) {document.querySelectorAll('.history-item').forEach(i => i.classList.remove('active')); event.target.closest('.history-item').classList.add('active');}
-        function saveCurrentProcess() {alert('保存功能：请使用 BPMN 设计器保存流程');}
-        async function sendApiRequest() {
-            const method = document.getElementById('api-method').value;
-            const endpoint = document.getElementById('api-endpoint').value.split(' ')[1];
-            const params = document.getElementById('api-params').value;
-            document.getElementById('api-status').textContent = '发送中...';
-            try {const opts = {method, headers: {'Content-Type': 'application/json'}}; if (method !== 'GET') opts.body = params; const res = await fetch(`${API_BASE}${endpoint}`, opts); const result = await res.json(); document.getElementById('api-status').textContent = `状态: ${res.status} ${res.statusText}`; document.getElementById('api-response').textContent = JSON.stringify(result, null, 2);} catch (e) {document.getElementById('api-status').textContent = '请求失败'; document.getElementById('api-response').textContent = e.message;}
-        }
-        function clearApiResponse() {document.getElementById('api-response').textContent = '等待发送请求...'; document.getElementById('api-status').textContent = '等待请求...';}
-        function updateApiExample() {const examples = {'/api/leave/create/': '{"user_email": "user@company.com","staff_full_name": "张三","staff_dept": "技术部","reason": "测试申请","leave_hours": 8,"leave_type": "annual"}', '/api/leave/approve/': '{"leave_request_id": 1,"task_id": "task-123","approver_email": "manager@company.com","approver_name": "李经理","comment": "同意"}'}; const endpoint = document.getElementById('api-endpoint').value.split(' ')[1]; if (examples[endpoint]) document.getElementById('api-params').value = examples[endpoint];}
-        window.onload = () => {document.getElementById('stat-pending').textContent = '-'; document.getElementById('stat-approved').textContent = '-'; document.getElementById('stat-rejected').textContent = '-'; document.getElementById('stat-total').textContent = '-';};
-    </script>
 </body>
 </html>
