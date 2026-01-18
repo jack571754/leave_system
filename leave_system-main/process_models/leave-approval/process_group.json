@@ -1,0 +1,5 @@
+{
+  "id": "leave-approval",
+  "display_name": "请假审批流程",
+  "description": "完整的请假审批链路，包含提交、部门审批、HR审批、总经理审批等环节"
+}

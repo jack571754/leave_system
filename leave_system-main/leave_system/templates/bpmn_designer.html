@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LogicFlow 流程设计器</title>
+    <title>BPMN 流程设计器</title>
     
     <!-- LogicFlow 核心库 -->
-    <script src="https://cdn.jsdelivr.net/npm/@logicflow/core@1.2.27/dist/logic-flow.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@logicflow/core@1.2.27/dist/style/index.css">
+    <script src="/static/logicflow/logic-flow.js"></script>
+    <link rel="stylesheet" href="/static/logicflow/style/index.css">
     
-    <!-- LogicFlow 扩展插件 -->
-    <script src="https://cdn.jsdelivr.net/npm/@logicflow/extension@1.2.27/dist/logic-flow-extension.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@logicflow/extension@1.2.27/dist/style/index.css">
+    <!-- LogicFlow BPMN 扩展 -->
+    <script src="/static/logicflow/extension/BpmnElement.js"></script>
+    <script src="/static/logicflow/extension/BpmnAdapter.js"></script>
     
     <!-- CodeMirror 代码编辑器 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
@@ -19,6 +19,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
     
     <style>
         * {
@@ -87,6 +88,129 @@
         .container {
             display: flex;
             height: calc(100vh - 60px);
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-section {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .sidebar-section:last-child {
+            flex: 1;
+            border-bottom: none;
+        }
+        
+        .sidebar h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .node-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            cursor: move;
+            transition: all 0.3s;
+            font-size: 13px;
+            user-select: none;
+        }
+        
+        .node-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .process-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .process-item:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+        }
+        
+        .process-item.active {
+            background: #e7e9fc;
+            border-color: #667eea;
+        }
+        
+        .process-name {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .process-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .icon-btn {
+            padding: 4px 8px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .icon-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .icon-btn.delete:hover {
+            background: #fee;
+            color: #f44;
+        }
+        
+        .add-btn {
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .add-btn:hover {
+            background: #5568d3;
+        }
+        
+        .empty-list {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-size: 12px;
         }
         
         .canvas-container {
@@ -184,55 +308,50 @@
             font-size: 48px;
             margin-bottom: 15px;
         }
-        
-        /* 自定义右键菜单 */
-        #context-menu {
-            display: none;
-            position: fixed;
-            width: 150px;
-            border: 1px solid #ccc;
-            background: #fff;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            border-radius: 5px;
-            z-index: 1000;
-        }
-        
-        #context-menu ul {
-            list-style: none;
-            margin: 5px 0;
-        }
-        
-        #context-menu li {
-            height: 35px;
-            line-height: 35px;
-            color: #333;
-            font-size: 13px;
-            text-align: center;
-            cursor: pointer;
-            border-bottom: 1px dashed #e0e0e0;
-        }
-        
-        #context-menu li:last-child {
-            border-bottom: none;
-        }
-        
-        #context-menu li:hover {
-            background-color: #f5f5f5;
-        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>🎨 LogicFlow 流程设计器</h1>
+        <h1>🎨 BPMN 流程设计器</h1>
         <div class="header-actions">
-            <button class="btn btn-primary" onclick="newDiagram()">📄 新建</button>
             <button class="btn btn-success" onclick="saveDiagram()">💾 保存</button>
-            <button class="btn btn-primary" onclick="downloadDiagram()">⬇️ 下载JSON</button>
+            <button class="btn btn-primary" onclick="viewXML()">📄 查看XML</button>
+            <button class="btn btn-primary" onclick="downloadJSON()">⬇️ 导出JSON</button>
             <button class="btn btn-secondary" onclick="window.location.href='/dashboard/'">🏠 返回</button>
         </div>
     </div>
     
     <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <h3>
+                    历史流程
+                    <button class="add-btn" onclick="createNewProcess()">+ 新建</button>
+                </h3>
+                <div id="process-list">
+                    <div class="empty-list">加载中...</div>
+                </div>
+            </div>
+            <div class="sidebar-section">
+                <h3>BPMN 节点</h3>
+                <div class="node-item" draggable="true" data-type="bpmn:startEvent">
+                    ⭕ 开始事件
+                </div>
+                <div class="node-item" draggable="true" data-type="bpmn:endEvent">
+                    ⭕ 结束事件
+                </div>
+                <div class="node-item" draggable="true" data-type="bpmn:userTask">
+                    📋 用户任务
+                </div>
+                <div class="node-item" draggable="true" data-type="bpmn:serviceTask">
+                    ⚙️ 服务任务
+                </div>
+                <div class="node-item" draggable="true" data-type="bpmn:exclusiveGateway">
+                    🔀 排他网关
+                </div>
+            </div>
+        </div>
+        
         <div class="canvas-container">
             <div id="canvas"></div>
         </div>
@@ -249,25 +368,31 @@
             </div>
         </div>
     </div>
-
-    <!-- 自定义右键菜单 -->
-    <div id="context-menu">
-        <ul>
-            <li onclick="deleteElement()">🗑️ 删除</li>
-            <li onclick="copyElement()">📋 复制</li>
-        </ul>
-    </div>
     
     <script>
-        const { LogicFlow } = window;
-        const { DndPanel, SelectionSelect, Menu, Control } = window.LogicFlowExtension;
-        
         let lf = null;
         let currentElement = null;
         let codeEditors = {};
-        
+        let currentProcessId = null;
+        let processList = [];
+
         // 初始化 LogicFlow
         function initLogicFlow() {
+            if (!window.LogicFlow) {
+                console.error('LogicFlow 库未加载');
+                alert('LogicFlow 库加载失败，请检查网络连接或刷新页面');
+                return;
+            }
+
+            if (!window.BpmnElement || !window.BpmnAdapter) {
+                console.error('BPMN 插件未加载');
+                alert('BPMN 插件加载失败，请检查文件路径');
+                return;
+            }
+
+            const { LogicFlow } = window;
+            
+            // 创建 LogicFlow 实例
             lf = new LogicFlow({
                 container: document.getElementById('canvas'),
                 grid: {
@@ -282,69 +407,12 @@
                 keyboard: {
                     enabled: true,
                 },
-                style: {
-                    rect: {
-                        rx: 5,
-                        ry: 5,
-                        strokeWidth: 2,
-                    },
-                    circle: {
-                        fill: '#f56a00',
-                        stroke: '#f56a00',
-                    },
-                    ellipse: {
-                        fill: '#f56a00',
-                        stroke: '#f56a00',
-                    },
-                    polygon: {
-                        fill: '#1890ff',
-                        stroke: '#1890ff',
-                    },
-                    diamond: {
-                        fill: '#52c41a',
-                        stroke: '#52c41a',
-                    },
-                    text: {
-                        color: '#000000',
-                        fontSize: 12,
-                    }
-                },
-                plugins: [DndPanel, SelectionSelect, Menu, Control],
+                edgeTextDraggable: false,
+                nodeTextDraggable: false,
+                adjustEdge: false,
+                hoverOutline: false,
+                plugins: [window.BpmnElement, window.BpmnAdapter]
             });
-            
-            // 设置左侧工具栏
-            lf.extension.dndPanel.setPatternItems([
-                {
-                    type: 'circle',
-                    text: '开始',
-                    label: '开始节点',
-                    icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjQiIGN5PSIyNCIgcj0iMjAiIGZpbGw9IiM1MmM0MWEiLz48L3N2Zz4=',
-                },
-                {
-                    type: 'rect',
-                    text: '用户任务',
-                    label: '用户任务',
-                    icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3QgeD0iNCIgeT0iNCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMTg5MGZmIiByeD0iNSIvPjwvc3ZnPg==',
-                },
-                {
-                    type: 'rect',
-                    text: '脚本任务',
-                    label: '脚本任务',
-                    icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3QgeD0iNCIgeT0iNCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjNzIyZWQxIiByeD0iNSIvPjwvc3ZnPg==',
-                },
-                {
-                    type: 'diamond',
-                    text: '网关',
-                    label: '排他网关',
-                    icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBvbHlnb24gcG9pbnRzPSIyNCw0IDQ0LDI0IDI0LDQ0IDQsMjQiIGZpbGw9IiNmYWFkMTQiLz48L3N2Zz4=',
-                },
-                {
-                    type: 'circle',
-                    text: '结束',
-                    label: '结束节点',
-                    icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjQiIGN5PSIyNCIgcj0iMjAiIGZpbGw9IiNmNTIyMmQiLz48L3N2Zz4=',
-                },
-            ]);
             
             // 监听节点点击事件
             lf.on('node:click', ({ data }) => {
@@ -364,22 +432,83 @@
                 showEmptyState();
             });
             
-            // 监听节点右键菜单
-            lf.on('node:contextmenu', ({ data, e }) => {
-                e.preventDefault();
-                currentElement = data;
-                showContextMenu(e.clientX, e.clientY);
+            // 监听节点拖动，强制更新文字位置
+            lf.on('node:dnd-drag', ({ data }) => {
+                const nodeModel = lf.graphModel.getNodeModelById(data.id);
+                if (nodeModel && nodeModel.text && typeof nodeModel.text.value === 'string') {
+                    nodeModel.text.x = data.x;
+                    nodeModel.text.y = data.y + 40;
+                }
             });
             
-            // 监听边右键菜单
-            lf.on('edge:contextmenu', ({ data, e }) => {
-                e.preventDefault();
-                currentElement = data;
-                showContextMenu(e.clientX, e.clientY);
+            // 监听节点拖动结束
+            lf.on('node:drop', ({ data }) => {
+                const nodeModel = lf.graphModel.getNodeModelById(data.id);
+                if (nodeModel && nodeModel.text && typeof nodeModel.text.value === 'string') {
+                    nodeModel.text.x = data.x;
+                    nodeModel.text.y = data.y + 40;
+                }
             });
             
-            // 渲染初始图表
-            renderInitialGraph();
+            // 设置拖拽
+            setupDragAndDrop();
+            
+            // 加载流程列表
+            loadProcessList();
+        }
+        
+        // 设置拖拽功能（优化流畅度）
+        function setupDragAndDrop() {
+            const nodeItems = document.querySelectorAll('.node-item');
+            let draggedType = null;
+            
+            nodeItems.forEach(item => {
+                item.addEventListener('dragstart', (e) => {
+                    draggedType = e.target.getAttribute('data-type');
+                    e.dataTransfer.effectAllowed = 'copy';
+                    e.dataTransfer.setData('text/plain', draggedType);
+                    e.target.style.opacity = '0.5';
+                });
+                
+                item.addEventListener('dragend', (e) => {
+                    e.target.style.opacity = '1';
+                });
+            });
+            
+            const canvas = document.getElementById('canvas');
+            
+            canvas.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'copy';
+            });
+            
+            canvas.addEventListener('drop', (e) => {
+                e.preventDefault();
+                
+                if (draggedType && lf) {
+                    const point = lf.getPointByClient(e.clientX, e.clientY);
+                    lf.addNode({
+                        type: draggedType,
+                        x: point.x,
+                        y: point.y,
+                        text: getNodeDefaultText(draggedType),
+                        properties: {}
+                    });
+                }
+                draggedType = null;
+            });
+        }
+        
+        // 获取节点默认文本
+        function getNodeDefaultText(type) {
+            const textMap = {
+                'bpmn:startEvent': '开始',
+                'bpmn:endEvent': '结束',
+                'bpmn:userTask': '用户任务',
+                'bpmn:serviceTask': '服务任务',
+                'bpmn:exclusiveGateway': '网关'
+            };
+            return textMap[type] || '';
         }
         
         // 渲染初始图表
@@ -388,38 +517,34 @@
                 nodes: [
                     {
                         id: 'start-1',
-                        type: 'circle',
+                        type: 'bpmn:startEvent',
                         x: 200,
                         y: 200,
                         text: '开始',
                         properties: {
-                            nodeType: 'start',
                             name: '开始节点'
                         }
                     },
                     {
                         id: 'task-1',
-                        type: 'rect',
+                        type: 'bpmn:userTask',
                         x: 400,
                         y: 200,
                         text: '用户任务',
                         properties: {
-                            nodeType: 'userTask',
                             name: '用户任务',
                             formSchema: '',
-                            formUiSchema: '',
                             preScript: '',
                             postScript: ''
                         }
                     },
                     {
                         id: 'end-1',
-                        type: 'circle',
+                        type: 'bpmn:endEvent',
                         x: 600,
                         y: 200,
                         text: '结束',
                         properties: {
-                            nodeType: 'end',
                             name: '结束节点'
                         }
                     }
@@ -427,7 +552,7 @@
                 edges: [
                     {
                         id: 'edge-1',
-                        type: 'polyline',
+                        type: 'bpmn:sequenceFlow',
                         sourceNodeId: 'start-1',
                         targetNodeId: 'task-1',
                         text: '',
@@ -437,7 +562,7 @@
                     },
                     {
                         id: 'edge-2',
-                        type: 'polyline',
+                        type: 'bpmn:sequenceFlow',
                         sourceNodeId: 'task-1',
                         targetNodeId: 'end-1',
                         text: '',
@@ -476,7 +601,7 @@
             `;
             
             // 用户任务特定属性
-            if (props.nodeType === 'userTask' || node.type === 'rect') {
+            if (node.type === 'bpmn:userTask' || node.type === 'bpmn:serviceTask') {
                 html += `
                     <div class="property-group">
                         <h3>表单配置</h3>
@@ -485,12 +610,6 @@
                             <input type="text" class="property-input" id="prop-form-schema" 
                                    value="${props.formSchema || ''}"
                                    onchange="updateNodeProperty('formSchema', this.value)">
-                        </div>
-                        <div class="property-item">
-                            <label class="property-label">表单 UI Schema 文件</label>
-                            <input type="text" class="property-input" id="prop-form-ui-schema" 
-                                   value="${props.formUiSchema || ''}"
-                                   onchange="updateNodeProperty('formUiSchema', this.value)">
                         </div>
                     </div>
                     
@@ -639,62 +758,11 @@
             }
         }
         
-        // 显示右键菜单
-        function showContextMenu(x, y) {
-            const menu = document.getElementById('context-menu');
-            menu.style.left = `${x}px`;
-            menu.style.top = `${y}px`;
-            menu.style.display = 'block';
-        }
-        
-        // 隐藏右键菜单
-        document.addEventListener('click', () => {
-            const menu = document.getElementById('context-menu');
-            menu.style.display = 'none';
-        });
-        
-        // 删除元素
-        function deleteElement() {
-            if (!currentElement) return;
-            
-            if (currentElement.type === 'polyline' || currentElement.type === 'line') {
-                lf.deleteEdge(currentElement.id);
-            } else {
-                lf.deleteNode(currentElement.id);
-            }
-            
-            currentElement = null;
-            showEmptyState();
-        }
-        
-        // 复制元素
-        function copyElement() {
-            if (!currentElement || currentElement.type === 'polyline' || currentElement.type === 'line') return;
-            
-            const newNode = {
-                ...currentElement,
-                id: 'node-' + Date.now(),
-                x: currentElement.x + 50,
-                y: currentElement.y + 50
-            };
-            
-            lf.addNode(newNode);
-        }
-        
-        // 新建图表
-        function newDiagram() {
-            if (confirm('创建新图表将清空当前画布，确定继续吗？')) {
-                lf.clearData();
-                renderInitialGraph();
-            }
-        }
-        
         // 保存图表
         function saveDiagram() {
             const graphData = lf.getGraphData();
             console.log('保存的图表数据:', graphData);
             
-            // 这里可以添加保存到服务器的逻辑
             fetch('/api/bpmn/save/', {
                 method: 'POST',
                 headers: {
@@ -712,8 +780,88 @@
             });
         }
         
-        // 下载图表
-        function downloadDiagram() {
+        // 查看 XML
+        function viewXML() {
+            if (!lf) {
+                alert('流程设计器未初始化');
+                return;
+            }
+            const graphData = lf.getGraphData();
+            if (!graphData || (!graphData.nodes && !graphData.edges)) {
+                alert('当前画布为空，无法生成XML');
+                return;
+            }
+            const xmlContent = generateBPMNXML(graphData);
+            
+            // 创建模态框显示XML
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;';
+            
+            const content = document.createElement('div');
+            content.style.cssText = 'background:#2d2d2d;width:80%;height:80%;border-radius:8px;display:flex;flex-direction:column;';
+            
+            const header = document.createElement('div');
+            header.style.cssText = 'padding:15px 20px;background:#1e1e1e;border-bottom:1px solid #444;display:flex;justify-content:space-between;align-items:center;border-radius:8px 8px 0 0;';
+            header.innerHTML = '<h3 style="margin:0;color:#fff;">BPMN XML</h3><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:#667eea;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">关闭</button>';
+            
+            const editorDiv = document.createElement('div');
+            editorDiv.style.cssText = 'flex:1;overflow:hidden;';
+            const textarea = document.createElement('textarea');
+            textarea.value = xmlContent;
+            editorDiv.appendChild(textarea);
+            
+            content.appendChild(header);
+            content.appendChild(editorDiv);
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            
+            // 初始化代码编辑器
+            setTimeout(() => {
+                const editor = CodeMirror.fromTextArea(textarea, {
+                    mode: 'xml',
+                    theme: 'monokai',
+                    lineNumbers: true,
+                    readOnly: true,
+                    lineWrapping: true
+                });
+                editor.setSize('100%', '100%');
+            }, 100);
+        }
+        
+        // 生成BPMN XML
+        function generateBPMNXML(graphData) {
+            let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+            xml += '<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI">\n';
+            xml += '  <bpmn:process id="Process_1" isExecutable="true">\n';
+            
+            if (graphData.nodes && graphData.nodes.length > 0) {
+                graphData.nodes.forEach(node => {
+                    const nodeType = node.type.split(':')[1];
+                    xml += `    <bpmn:${nodeType} id="${node.id}" name="${node.text || ''}">\n`;
+                    if (node.properties) {
+                        Object.entries(node.properties).forEach(([key, value]) => {
+                            if (value) xml += `      <bpmn:extensionElements><property name="${key}">${value}</property></bpmn:extensionElements>\n`;
+                        });
+                    }
+                    xml += `    </bpmn:${nodeType}>\n`;
+                });
+            }
+            
+            if (graphData.edges && graphData.edges.length > 0) {
+                graphData.edges.forEach(edge => {
+                    xml += `    <bpmn:sequenceFlow id="${edge.id}" sourceRef="${edge.sourceNodeId}" targetRef="${edge.targetNodeId}"`;
+                    if (edge.text) xml += ` name="${edge.text}"`;
+                    xml += ' />\n';
+                });
+            }
+            
+            xml += '  </bpmn:process>\n';
+            xml += '</bpmn:definitions>';
+            return xml;
+        }
+        
+        // 下载 JSON
+        function downloadJSON() {
             const graphData = lf.getGraphData();
             const dataStr = JSON.stringify(graphData, null, 2);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -721,10 +869,247 @@
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = 'flow-diagram-' + Date.now() + '.json';
+            link.download = 'bpmn-flow-' + Date.now() + '.json';
             link.click();
             
             URL.revokeObjectURL(url);
+        }
+        
+        // 加载流程列表
+        function loadProcessList() {
+            fetch('/api/bpmn/processes/')
+                .then(response => response.json())
+                .then(data => {
+                    processList = data.processes || [];
+                    renderProcessList();
+                    if (processList.length > 0) {
+                        loadProcess(processList[0].id);
+                    } else {
+                        renderInitialGraph();
+                    }
+                })
+                .catch(error => {
+                    console.error('加载流程列表失败:', error);
+                    document.getElementById('process-list').innerHTML = '<div class="empty-list">加载失败</div>';
+                    renderInitialGraph();
+                });
+        }
+        
+        // 渲染流程列表
+        function renderProcessList() {
+            const listEl = document.getElementById('process-list');
+            if (processList.length === 0) {
+                listEl.innerHTML = '<div class="empty-list">暂无流程</div>';
+                return;
+            }
+            
+            listEl.innerHTML = processList.map(process => `
+                <div class="process-item ${process.id === currentProcessId ? 'active' : ''}" onclick="loadProcess('${process.id}')">
+                    <span class="process-name" title="${process.name}">${process.name}</span>
+                    <div class="process-actions">
+                        <button class="icon-btn delete" onclick="event.stopPropagation();deleteProcess('${process.id}')" title="删除">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 自定义BPMN解析函数
+        function parseSpiffBPMN(xmlString) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+            
+            const nodes = [];
+            const edges = [];
+            
+            // 解析节点
+            const process = xmlDoc.querySelector('process');
+            if (!process) return { nodes, edges };
+            
+            // 解析开始事件
+            process.querySelectorAll('startEvent').forEach(node => {
+                const shape = xmlDoc.querySelector(`BPMNShape[bpmnElement="${node.id}"]`);
+                if (shape) {
+                    const bounds = shape.querySelector('Bounds');
+                    nodes.push({
+                        id: node.id,
+                        type: 'bpmn:startEvent',
+                        x: parseFloat(bounds.getAttribute('x')) + parseFloat(bounds.getAttribute('width')) / 2,
+                        y: parseFloat(bounds.getAttribute('y')) + parseFloat(bounds.getAttribute('height')) / 2,
+                        text: node.getAttribute('name') || '开始',
+                        properties: {}
+                    });
+                }
+            });
+            
+            // 解析用户任务
+            process.querySelectorAll('userTask').forEach(node => {
+                const shape = xmlDoc.querySelector(`BPMNShape[bpmnElement="${node.id}"]`);
+                if (shape) {
+                    const bounds = shape.querySelector('Bounds');
+                    const props = {};
+                    node.querySelectorAll('property').forEach(prop => {
+                        props[prop.getAttribute('name')] = prop.textContent;
+                    });
+                    nodes.push({
+                        id: node.id,
+                        type: 'bpmn:userTask',
+                        x: parseFloat(bounds.getAttribute('x')) + parseFloat(bounds.getAttribute('width')) / 2,
+                        y: parseFloat(bounds.getAttribute('y')) + parseFloat(bounds.getAttribute('height')) / 2,
+                        text: node.getAttribute('name') || '用户任务',
+                        properties: props
+                    });
+                }
+            });
+            
+            // 解析服务任务
+            process.querySelectorAll('serviceTask').forEach(node => {
+                const shape = xmlDoc.querySelector(`BPMNShape[bpmnElement="${node.id}"]`);
+                if (shape) {
+                    const bounds = shape.querySelector('Bounds');
+                    nodes.push({
+                        id: node.id,
+                        type: 'bpmn:serviceTask',
+                        x: parseFloat(bounds.getAttribute('x')) + parseFloat(bounds.getAttribute('width')) / 2,
+                        y: parseFloat(bounds.getAttribute('y')) + parseFloat(bounds.getAttribute('height')) / 2,
+                        text: node.getAttribute('name') || '服务任务',
+                        properties: {}
+                    });
+                }
+            });
+            
+            // 解析网关
+            process.querySelectorAll('exclusiveGateway').forEach(node => {
+                const shape = xmlDoc.querySelector(`BPMNShape[bpmnElement="${node.id}"]`);
+                if (shape) {
+                    const bounds = shape.querySelector('Bounds');
+                    nodes.push({
+                        id: node.id,
+                        type: 'bpmn:exclusiveGateway',
+                        x: parseFloat(bounds.getAttribute('x')) + parseFloat(bounds.getAttribute('width')) / 2,
+                        y: parseFloat(bounds.getAttribute('y')) + parseFloat(bounds.getAttribute('height')) / 2,
+                        text: node.getAttribute('name') || '网关',
+                        properties: {}
+                    });
+                }
+            });
+            
+            // 解析结束事件
+            process.querySelectorAll('endEvent').forEach(node => {
+                const shape = xmlDoc.querySelector(`BPMNShape[bpmnElement="${node.id}"]`);
+                if (shape) {
+                    const bounds = shape.querySelector('Bounds');
+                    nodes.push({
+                        id: node.id,
+                        type: 'bpmn:endEvent',
+                        x: parseFloat(bounds.getAttribute('x')) + parseFloat(bounds.getAttribute('width')) / 2,
+                        y: parseFloat(bounds.getAttribute('y')) + parseFloat(bounds.getAttribute('height')) / 2,
+                        text: node.getAttribute('name') || '结束',
+                        properties: {}
+                    });
+                }
+            });
+            
+            // 解析连线
+            process.querySelectorAll('sequenceFlow').forEach(edge => {
+                const edgeEl = xmlDoc.querySelector(`BPMNEdge[bpmnElement="${edge.id}"]`);
+                if (edgeEl) {
+                    const waypoints = Array.from(edgeEl.querySelectorAll('waypoint')).map(wp => ({
+                        x: parseFloat(wp.getAttribute('x')),
+                        y: parseFloat(wp.getAttribute('y'))
+                    }));
+                    edges.push({
+                        id: edge.id,
+                        type: 'bpmn:sequenceFlow',
+                        sourceNodeId: edge.getAttribute('sourceRef'),
+                        targetNodeId: edge.getAttribute('targetRef'),
+                        text: edge.getAttribute('name') || '',
+                        properties: {},
+                        pointsList: waypoints
+                    });
+                }
+            });
+            
+            return { nodes, edges };
+        }
+        
+        // 加载流程
+        function loadProcess(processId) {
+            currentProcessId = processId;
+            fetch(`/api/bpmn/processes/${processId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.xml) {
+                        try {
+                            const customData = parseSpiffBPMN(data.xml);
+                            console.log('解析的节点:', customData.nodes);
+                            console.log('解析的连线:', customData.edges);
+                            
+                            if (customData.nodes.length > 0) {
+                                lf.render(customData);
+                            } else {
+                                console.error('未能解析出节点');
+                                renderInitialGraph();
+                            }
+                        } catch (e) {
+                            console.error('解析BPMN失败:', e);
+                            renderInitialGraph();
+                        }
+                    } else {
+                        renderInitialGraph();
+                    }
+                    renderProcessList();
+                })
+                .catch(error => {
+                    console.error('加载流程失败:', error);
+                    alert('加载流程失败: ' + error.message);
+                });
+        }
+        
+        // 删除流程
+        function deleteProcess(processId) {
+            if (!confirm('确定要删除这个流程吗？')) return;
+            
+            fetch(`/api/bpmn/processes/${processId}/`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('删除成功');
+                loadProcessList();
+            })
+            .catch(error => {
+                console.error('删除失败:', error);
+                alert('删除失败: ' + error.message);
+            });
+        }
+        
+        // 创建新流程
+        function createNewProcess() {
+            const name = prompt('请输入流程名称:');
+            if (!name) return;
+            
+            const graphData = lf.getGraphData();
+            const xml = generateBPMNXML(graphData);
+            
+            fetch('/api/bpmn/processes/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: name,
+                    description: '',
+                    group: 'custom',
+                    xml: xml
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('创建成功');
+                loadProcessList();
+            })
+            .catch(error => {
+                console.error('创建失败:', error);
+                alert('创建失败: ' + error.message);
+            });
         }
         
         // 页面加载完成后初始化

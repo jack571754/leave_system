@@ -1,0 +1,7 @@
+{
+  "id": "leave-approval",
+  "display_name": "请假审批流程",
+  "description": "完整的请假审批链路，包含部门经理审批、HR审批、总经理审批等环节",
+  "primary_file_name": "leave-approval.bpmn",
+  "primary_process_id": "Process_LeaveApproval"
+}

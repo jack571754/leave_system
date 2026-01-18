@@ -193,4 +193,8 @@ urlpatterns = [
     # 验证流程
     # GET /api/bpmn/processes/<process_id>/validate/
     path('bpmn/processes/<path:process_id>/validate/', bpmn_views.validate_process, name='validate_bpmn_process'),
+
+    # 保存 LogicFlow 流程图
+    # POST /api/bpmn/save/
+    path('bpmn/save/', bpmn_views.save_logicflow_diagram, name='save_logicflow_diagram'),
 ]

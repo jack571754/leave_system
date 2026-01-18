@@ -22,15 +22,15 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 
 def index_view(request):
-    """根路径视图 - 重定向到管理面板"""
-    return redirect('/dashboard/')
+    """根路径视图 - 重定向到BPMN设计器"""
+    return redirect('/bpmn-designer/')
 
 def api_info_view(request):
     """API 信息视图"""
     return JsonResponse({
         'message': '欢迎使用请假审批系统 API',
         'version': '2.0',
-        'dashboard': '/dashboard/',
+        'bpmn_designer': '/bpmn-designer/',
         'endpoints': {
             'create_leave': '/api/leave/create/',
             'my_requests': '/api/leave/my-requests/',
@@ -39,20 +39,15 @@ def api_info_view(request):
             'reject': '/api/leave/reject/',
             'history': '/api/leave/requests/{id}/history/',
         },
-        'documentation': '请访问 /dashboard/ 使用管理界面'
+        'documentation': '请访问 /bpmn-designer/ 使用BPMN流程设计器'
     })
 
-def dashboard_view(request):
-    """管理面板视图"""
-    return render(request, 'dashboard.html')
-
 def bpmn_designer_view(request):
-    """BPMN 设计器视图"""
+    """BPMN 设计器视图（使用官方插件）"""
     return render(request, 'bpmn_designer.html')
 
 urlpatterns = [
     path('', index_view, name='index'),
-    path('dashboard/', dashboard_view, name='dashboard'),
     path('bpmn-designer/', bpmn_designer_view, name='bpmn_designer'),
     path('api-info/', api_info_view, name='api_info'),
     path('admin/', admin.site.urls),

@@ -27,7 +27,7 @@ from lxml import etree
 from SpiffWorkflow.bpmn.workflow import BpmnWorkflow
 from SpiffWorkflow.bpmn.parser.BpmnParser import BpmnParser
 from SpiffWorkflow.bpmn.serializer.workflow import BpmnWorkflowSerializer
-from SpiffWorkflow.bpmn import PythonScriptEngine
+from SpiffWorkflow.bpmn.PythonScriptEngine import PythonScriptEngine
 import json
 
 # 获取日志记录器

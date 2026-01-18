@@ -1,0 +1,76 @@
+{
+  "title": "审批表单",
+  "description": "请假申请审批表单",
+  "type": "object",
+  "required": ["approval_decision", "approver_email", "approver_name"],
+  "properties": {
+    "approval_decision": {
+      "type": "string",
+      "title": "审批决定",
+      "enum": ["approve", "reject", "return"],
+      "enumNames": ["批准", "拒绝", "退回"],
+      "default": "approve"
+    },
+    "approver_email": {
+      "type": "string",
+      "title": "审批人邮箱",
+      "format": "email",
+      "description": "审批人的邮箱地址"
+    },
+    "approver_name": {
+      "type": "string",
+      "title": "审批人姓名",
+      "description": "审批人的姓名"
+    },
+    "comment": {
+      "type": "string",
+      "title": "审批意见",
+      "description": "请填写审批意见或建议"
+    },
+    "leave_request_info": {
+      "type": "object",
+      "title": "请假申请信息",
+      "readOnly": true,
+      "properties": {
+        "user_email": {
+          "type": "string",
+          "title": "申请人邮箱"
+        },
+        "staff_full_name": {
+          "type": "string",
+          "title": "申请人姓名"
+        },
+        "staff_dept": {
+          "type": "string",
+          "title": "申请人部门"
+        },
+        "leave_type": {
+          "type": "string",
+          "title": "请假类型"
+        },
+        "start_date": {
+          "type": "string",
+          "title": "开始日期",
+          "format": "date"
+        },
+        "end_date": {
+          "type": "string",
+          "title": "结束日期",
+          "format": "date"
+        },
+        "duration": {
+          "type": "number",
+          "title": "请假天数"
+        },
+        "leave_hours": {
+          "type": "integer",
+          "title": "请假小时数"
+        },
+        "reason": {
+          "type": "string",
+          "title": "请假原因"
+        }
+      }
+    }
+  }
+}

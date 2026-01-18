@@ -306,6 +306,36 @@ def deploy_process(request, process_id):
         }, status=500)
 
 
+@csrf_exempt
+@require_http_methods(["POST"])
+def save_logicflow_diagram(request):
+    """
+    保存 LogicFlow 流程图数据
+
+    POST /api/bpmn/save/
+
+    请求体:
+    {
+        "nodes": [...],
+        "edges": [...]
+    }
+    """
+    try:
+        data = json.loads(request.body)
+
+        # 这里可以将 LogicFlow 数据保存到数据库或文件
+        # 目前只是返回成功消息
+
+        return JsonResponse({
+            'message': '流程图保存成功',
+            'data': data
+        })
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+
 @require_http_methods(["GET"])
 def validate_process(request, process_id):
     """

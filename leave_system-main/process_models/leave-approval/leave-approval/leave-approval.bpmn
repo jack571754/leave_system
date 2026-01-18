@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" 
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:spiffworkflow="http://spiffworkflow.org/bpmn/schema/1.0/core"
+                  id="Definitions_LeaveApproval"
+                  targetNamespace="http://bpmn.io/schema/bpmn">
+  
+  <bpmn:process id="Process_LeaveApproval" name="请假审批流程" isExecutable="true">
+    
+    <!-- 开始事件 -->
+    <bpmn:startEvent id="StartEvent_1" name="提交请假申请">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- 部门经理审批 -->
+    <bpmn:userTask id="Task_DeptManagerApproval" name="部门经理审批">
+      <bpmn:extensionElements>
+        <spiffworkflow:properties>
+          <spiffworkflow:property name="formSchema" value="approval-form-schema.json" />
+          <spiffworkflow:property name="assignee" value="dept_manager" />
+        </spiffworkflow:properties>
+        <spiffworkflow:preScript>
+# 获取部门经理信息
+dept_manager = get_dept_manager(staff_dept)
+assignee_email = dept_manager['email']
+        </spiffworkflow:preScript>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- 判断是否需要HR审批 -->
+    <bpmn:exclusiveGateway id="Gateway_NeedHR" name="是否需要HR审批">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToHR</bpmn:outgoing>
+      <bpmn:outgoing>Flow_SkipHR</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <!-- HR审批 -->
+    <bpmn:userTask id="Task_HRApproval" name="HR审批">
+      <bpmn:extensionElements>
+        <spiffworkflow:properties>
+          <spiffworkflow:property name="formSchema" value="approval-form-schema.json" />
+          <spiffworkflow:property name="assignee" value="hr_manager" />
+        </spiffworkflow:properties>
+        <spiffworkflow:preScript>
+# 获取HR经理信息
+hr_manager = get_hr_manager()
+assignee_email = hr_manager['email']
+        </spiffworkflow:preScript>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_ToHR</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- 判断是否需要总经理审批 -->
+    <bpmn:exclusiveGateway id="Gateway_NeedCEO" name="是否需要总经理审批">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:incoming>Flow_SkipHR</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToCEO</bpmn:outgoing>
+      <bpmn:outgoing>Flow_SkipCEO</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <!-- 总经理审批 -->
+    <bpmn:userTask id="Task_CEOApproval" name="总经理审批">
+      <bpmn:extensionElements>
+        <spiffworkflow:properties>
+          <spiffworkflow:property name="formSchema" value="approval-form-schema.json" />
+          <spiffworkflow:property name="assignee" value="ceo" />
+        </spiffworkflow:properties>
+        <spiffworkflow:preScript>
+# 获取总经理信息
+ceo = get_ceo()
+assignee_email = ceo['email']
+        </spiffworkflow:preScript>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_ToCEO</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- 审批通过服务任务 -->
+    <bpmn:serviceTask id="Task_ApprovalSuccess" name="审批通过处理">
+      <bpmn:extensionElements>
+        <spiffworkflow:postScript>
+# 更新请假申请状态为已批准
+update_leave_status(leave_request_id, 'approved')
+
+# 发送通知给申请人
+send_notification(user_email, '您的请假申请已批准')
+
+# 记录审批历史
+record_approval_history(leave_request_id, 'approve', approver_email, approver_name, comment)
+        </spiffworkflow:postScript>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:incoming>Flow_SkipCEO</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- 结束事件 -->
+    <bpmn:endEvent id="EndEvent_1" name="流程结束">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- 连线定义 -->
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_DeptManagerApproval" name="提交申请" />
+    
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_DeptManagerApproval" targetRef="Gateway_NeedHR" name="部门经理批准" />
+    
+    <bpmn:sequenceFlow id="Flow_ToHR" sourceRef="Gateway_NeedHR" targetRef="Task_HRApproval" name="需要HR审批">
+      <bpmn:conditionExpression>leave_hours &gt;= 24 or leave_type in ['sick', 'maternity', 'paternity']</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    
+    <bpmn:sequenceFlow id="Flow_SkipHR" sourceRef="Gateway_NeedHR" targetRef="Gateway_NeedCEO" name="无需HR审批">
+      <bpmn:conditionExpression>leave_hours &lt; 24 and leave_type not in ['sick', 'maternity', 'paternity']</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_HRApproval" targetRef="Gateway_NeedCEO" name="HR批准" />
+    
+    <bpmn:sequenceFlow id="Flow_ToCEO" sourceRef="Gateway_NeedCEO" targetRef="Task_CEOApproval" name="需要总经理审批">
+      <bpmn:conditionExpression>leave_hours &gt;= 72 or duration &gt;= 3</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    
+    <bpmn:sequenceFlow id="Flow_SkipCEO" sourceRef="Gateway_NeedCEO" targetRef="Task_ApprovalSuccess" name="无需总经理审批">
+      <bpmn:conditionExpression>leave_hours &lt; 72 and duration &lt; 3</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_CEOApproval" targetRef="Task_ApprovalSuccess" name="总经理批准" />
+    
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_ApprovalSuccess" targetRef="EndEvent_1" name="完成" />
+    
+  </bpmn:process>
+  
+  <!-- BPMN 图形信息 -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_LeaveApproval">
+      
+      <!-- 开始事件 -->
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="138" y="145" width="66" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- 部门经理审批 -->
+      <bpmndi:BPMNShape id="Task_DeptManagerApproval_di" bpmnElement="Task_DeptManagerApproval">
+        <dc:Bounds x="240" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <!-- 是否需要HR审批网关 -->
+      <bpmndi:BPMNShape id="Gateway_NeedHR_di" bpmnElement="Gateway_NeedHR" isMarkerVisible="true">
+        <dc:Bounds x="395" y="95" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="378" y="65" width="84" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- HR审批 -->
+      <bpmndi:BPMNShape id="Task_HRApproval_di" bpmnElement="Task_HRApproval">
+        <dc:Bounds x="500" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <!-- 是否需要总经理审批网关 -->
+      <bpmndi:BPMNShape id="Gateway_NeedCEO_di" bpmnElement="Gateway_NeedCEO" isMarkerVisible="true">
+        <dc:Bounds x="655" y="95" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="638" y="65" width="108" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- 总经理审批 -->
+      <bpmndi:BPMNShape id="Task_CEOApproval_di" bpmnElement="Task_CEOApproval">
+        <dc:Bounds x="760" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <!-- 审批通过处理 -->
+      <bpmndi:BPMNShape id="Task_ApprovalSuccess_di" bpmnElement="Task_ApprovalSuccess">
+        <dc:Bounds x="920" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <!-- 结束事件 -->
+      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
+        <dc:Bounds x="1082" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1074" y="145" width="54" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- 连线 -->
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="188" y="120" />
+        <di:waypoint x="240" y="120" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="340" y="120" />
+        <di:waypoint x="395" y="120" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_ToHR_di" bpmnElement="Flow_ToHR">
+        <di:waypoint x="445" y="120" />
+        <di:waypoint x="500" y="120" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_SkipHR_di" bpmnElement="Flow_SkipHR">
+        <di:waypoint x="420" y="145" />
+        <di:waypoint x="420" y="220" />
+        <di:waypoint x="680" y="220" />
+        <di:waypoint x="680" y="145" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="600" y="120" />
+        <di:waypoint x="655" y="120" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_ToCEO_di" bpmnElement="Flow_ToCEO">
+        <di:waypoint x="705" y="120" />
+        <di:waypoint x="760" y="120" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_SkipCEO_di" bpmnElement="Flow_SkipCEO">
+        <di:waypoint x="680" y="145" />
+        <di:waypoint x="680" y="280" />
+        <di:waypoint x="970" y="280" />
+        <di:waypoint x="970" y="160" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="860" y="120" />
+        <di:waypoint x="920" y="120" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="1020" y="120" />
+        <di:waypoint x="1082" y="120" />
+      </bpmndi:BPMNEdge>
+      
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  
+</bpmn:definitions>
