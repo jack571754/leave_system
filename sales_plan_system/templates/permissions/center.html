@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block title %}权限中心{% endblock %}
+{% block page_title %}权限中心{% endblock %}
+
+{% block content %}
+<div class="space-y-4">
+    <section class="overflow-hidden rounded-lg border border-slate-700 bg-slate-900 text-white">
+        <div class="grid gap-4 px-4 py-4 lg:grid-cols-[1.35fr_0.65fr]">
+            <div class="space-y-3">
+                <p class="text-[11px] uppercase tracking-[0.25em] text-slate-400">RBAC 权限管理</p>
+                <div class="space-y-2">
+                    <h3 class="text-sm font-bold font-heading tracking-tight">基于角色的访问控制系统</h3>
+                    <p class="max-w-3xl text-xs leading-5 text-slate-400">
+                        管理系统角色、权限分配与数据范围规则。
+                        支持页面级、操作级和数据级三层权限控制。
+                    </p>
+                </div>
+            </div>
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                <div class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-3">
+                    <div class="text-[11px] uppercase tracking-[0.2em] text-slate-500">授权店铺数</div>
+                    <div class="mt-2 text-lg font-semibold tabular-nums font-mono">{{ authorized_store_count }}</div>
+                </div>
+                <div class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-3">
+                    <div class="text-[11px] uppercase tracking-[0.2em] text-slate-500">系统状态</div>
+                    <div class="mt-2 text-xs text-slate-300">
+                        {% if rbac_ready %}RBAC 已就绪，权限数据已加载{% else %}RBAC 未就绪，使用 Legacy 兼容模式{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <p class="text-xs font-medium text-slate-600">活跃用户</p>
+            <p class="mt-2 text-lg font-semibold tabular-nums font-mono text-slate-900">{{ users_count }}</p>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <p class="text-xs font-medium text-slate-600">RBAC 角色</p>
+            <p class="mt-2 text-lg font-semibold tabular-nums font-mono text-slate-900">{{ role_count }}</p>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <p class="text-xs font-medium text-slate-600">权限条目</p>
+            <p class="mt-2 text-lg font-semibold tabular-nums font-mono text-slate-900">{{ permission_count }}</p>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <p class="text-xs font-medium text-slate-600">角色分配数</p>
+            <p class="mt-2 text-lg font-semibold tabular-nums font-mono text-slate-900">{{ assignment_count }}</p>
+        </div>
+    </section>
+
+    <section class="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+        <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <h4 class="text-sm font-bold font-heading text-slate-900">角色总览</h4>
+                    <p class="mt-0.5 text-xs text-slate-500">当前 RBAC 角色，兼容 Legacy user.role 体系</p>
+                </div>
+            </div>
+            <div class="mt-3 overflow-hidden rounded-lg border border-slate-200">
+                <table class="min-w-full divide-y divide-slate-200 text-xs">
+                    <thead class="bg-slate-50 text-left text-[11px] font-medium uppercase text-slate-500">
+                        <tr>
+                            <th class="px-3 py-2">角色</th>
+                            <th class="px-3 py-2">类型</th>
+                            <th class="px-3 py-2 text-right">优先级</th>
+                            <th class="px-3 py-2 text-right">权限数</th>
+                            <th class="px-3 py-2 text-right">分配数</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 bg-white">
+                        {% for role in roles %}
+                        <tr>
+                            <td class="px-3 py-2">
+                                <div class="font-medium text-slate-900">{{ role.name }}</div>
+                                <div class="text-[11px] text-slate-400">{{ role.code }}</div>
+                            </td>
+                            <td class="px-3 py-2 text-slate-600">{{ role.get_role_type_display }}</td>
+                            <td class="px-3 py-2 text-right tabular-nums font-mono text-slate-600">{{ role.priority }}</td>
+                            <td class="px-3 py-2 text-right tabular-nums font-mono text-slate-600">{{ role.permission_total }}</td>
+                            <td class="px-3 py-2 text-right tabular-nums font-mono text-slate-600">{{ role.assignment_total }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="px-3 py-6 text-center text-xs text-slate-400">{% if rbac_ready %}暂无 RBAC 角色{% else %}请先执行数据库迁移初始化{% endif %}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <h4 class="text-sm font-bold font-heading text-slate-900">权限目录</h4>
+            <div class="mt-3 space-y-2">
+                {% for permission in permission_catalog %}
+                <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                    <div class="font-mono text-xs text-slate-900">{{ permission.code }}</div>
+                    <div class="mt-0.5 text-[11px] uppercase tracking-[0.15em] text-slate-500">{{ permission.module }} / {{ permission.resource }} / {{ permission.action }}</div>
+                </div>
+                {% empty %}
+                <div class="rounded-lg bg-slate-50 px-3 py-6 text-center text-xs text-slate-400">{% if rbac_ready %}暂无权限条目{% else %}请先执行迁移以初始化 RBAC 数据{% endif %}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section class="grid gap-4 xl:grid-cols-2">
+        <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <h4 class="text-sm font-bold font-heading text-slate-900">最近角色分配</h4>
+            <div class="mt-3 overflow-hidden rounded-lg border border-slate-200">
+                <table class="min-w-full divide-y divide-slate-200 text-xs">
+                    <thead class="bg-slate-50 text-left text-[11px] font-medium uppercase text-slate-500">
+                        <tr>
+                            <th class="px-3 py-2">用户</th>
+                            <th class="px-3 py-2">角色</th>
+                            <th class="px-3 py-2">范围</th>
+                            <th class="px-3 py-2">对象</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 bg-white">
+                        {% for assignment in assignments %}
+                        <tr>
+                            <td class="px-3 py-2 font-medium text-slate-900">{{ assignment.user.username }}</td>
+                            <td class="px-3 py-2 text-slate-600">{{ assignment.role.name }}</td>
+                            <td class="px-3 py-2 text-slate-600">{{ assignment.get_scope_type_display }}</td>
+                            <td class="px-3 py-2 text-slate-500">{{ assignment.store|default:assignment.org_unit|default:'全局' }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="px-3 py-6 text-center text-xs text-slate-400">{% if rbac_ready %}暂无角色分配记录{% else %}请先执行数据库迁移初始化{% endif %}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <h4 class="text-sm font-bold font-heading text-slate-900">页面权限配置</h4>
+            <div class="mt-3 overflow-hidden rounded-lg border border-slate-200">
+                <table class="min-w-full divide-y divide-slate-200 text-xs">
+                    <thead class="bg-slate-50 text-left text-[11px] font-medium uppercase text-slate-500">
+                        <tr>
+                            <th class="px-3 py-2">页面</th>
+                            <th class="px-3 py-2">路由</th>
+                            <th class="px-3 py-2">权限码</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 bg-white">
+                        {% for page in page_configs %}
+                        <tr>
+                            <td class="px-3 py-2 font-medium text-slate-900">{{ page.label }}</td>
+                            <td class="px-3 py-2 text-slate-600">{{ page.url_name }}</td>
+                            <td class="px-3 py-2 text-slate-500">{{ page.permission_code|default:'无需权限' }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="px-3 py-6 text-center text-xs text-slate-400">暂无页面权限配置</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <h4 class="text-sm font-bold font-heading text-slate-900">数据范围规则</h4>
+            <p class="mt-0.5 text-xs text-slate-500">统一的数据权限范围配置（已废弃 Legacy DataPermissionConfig，统一使用 DataScopeRule）</p>
+            <div class="mt-3 space-y-2">
+                {% for rule in data_scope_rules %}
+                <div class="rounded-lg border border-slate-200 px-3 py-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <div class="text-xs font-medium text-slate-900">{{ rule.name }}</div>
+                            <div class="mt-0.5 text-[11px] text-slate-500">{{ rule.resource_code }} / {{ rule.get_subject_type_display }} / {{ rule.get_scope_type_display }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="rounded-lg bg-slate-50 px-3 py-6 text-center text-xs text-slate-400">{% if rbac_ready %}暂无 DataScopeRule{% else %}请先执行迁移以初始化数据规则{% endif %}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

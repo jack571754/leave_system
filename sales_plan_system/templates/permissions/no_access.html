@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}No Access{% endblock %}
+{% block page_title %}No Access{% endblock %}
+
+{% block content %}
+<div class="rounded-lg border border-slate-200 bg-white p-8">
+    <div class="mx-auto max-w-2xl text-center">
+        <div class="text-[11px] uppercase tracking-[0.25em] text-slate-400">403</div>
+        <h3 class="mt-2 text-sm font-bold font-heading text-slate-900">You do not have access</h3>
+        <p class="mt-2 text-xs leading-5 text-slate-600">Your account is authenticated, but it is not authorized for this page. Contact an administrator or request the required role or store scope.</p>
+        <a href="{% url 'dashboard' %}" class="mt-4 inline-flex rounded-md bg-brand-700 px-3 py-1.5 text-xs text-white hover:bg-brand-800">Back to dashboard</a>
+    </div>
+</div>
+{% endblock %}

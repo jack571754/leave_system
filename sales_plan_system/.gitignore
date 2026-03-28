@@ -1,0 +1,84 @@
+# ============================================
+# 销售计划提报系统 - Git 忽略文件
+# ============================================
+
+# 环境变量文件 (包含敏感信息)
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 虚拟环境
+venv/
+ENV/
+env/
+.venv/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db_new.sqlite3
+*.sqlite3
+
+# 静态文件 (collectstatic 后)
+staticfiles/
+
+# 媒体文件
+media/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# 测试
+.coverage
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# 分支备份
+*.backup
+*.bak
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# 敏感数据导出
+exports/
+backups/
+*.sql.gz

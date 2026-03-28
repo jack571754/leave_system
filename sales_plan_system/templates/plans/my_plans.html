@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}我的计划 - 销售计划系统{% endblock %}
+{% block nav_plans %}bg-slate-800{% endblock %}
+{% block page_title %}我的销售计划{% endblock %}
+
+{% block content %}
+<div x-data="planListData()" class="space-y-6">
+    <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-3">
+                <input type="month" x-model="monthFilter" @change="filterList()" class="rounded-xl border border-slate-300 px-4 py-2">
+                <select x-model="statusFilter" @change="filterList()" class="rounded-xl border border-slate-300 px-4 py-2">
+                    <option value="">全部状态</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <a href="{% url 'plans:campaign_create' %}" class="rounded-xl bg-slate-950 px-4 py-2 text-white hover:bg-slate-800">创建任务批次</a>
+        </div>
+    </div>
+
+    <div class="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
+        {% for plan in plans %}
+        <article class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h3 class="text-2xl font-semibold">{{ plan.plan_month }}</h3>
+                    <p class="mt-2 text-sm text-slate-500">{{ plan.department.name|default:"未分配部门" }}</p>
+                </div>
+                <span class="rounded-full px-3 py-1 text-xs {% if plan.status == 'draft' %}bg-slate-100 text-slate-700{% elif plan.status == 'pending' %}bg-amber-100 text-amber-700{% elif plan.status == 'approved' %}bg-emerald-100 text-emerald-700{% else %}bg-rose-100 text-rose-700{% endif %}">
+                    {{ plan.get_status_display }}
+                </span>
+            </div>
+
+            <dl class="mt-6 space-y-2 text-sm text-slate-500">
+                <div class="flex justify-between">
+                    <dt>SKU 明细数</dt>
+                    <dd>{{ plan.items.count }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt>创建时间</dt>
+                    <dd>{{ plan.created_at|date:"Y-m-d H:i" }}</dd>
+                </div>
+                {% if plan.status == 'pending' %}
+                <div class="flex justify-between">
+                    <dt>审批层级</dt>
+                    <dd>第 {{ plan.get_current_approval_level }} 级</dd>
+                </div>
+                {% endif %}
+            </dl>
+
+            {% if plan.status == 'rejected' %}
+            <div class="mt-4 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                最近一次退回意见：
+                {% for approval in plan.approvals.all %}
+                    {% if approval.action == 'reject' %}
+                        {{ approval.comment|default:"未填写" }}
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="mt-6 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                历史个人计划仅保留摘要信息，新增与编辑请使用任务批次流程。
+            </div>
+        </article>
+        {% empty %}
+        <div class="rounded-3xl bg-white p-10 text-center text-slate-500 shadow-sm ring-1 ring-slate-200 lg:col-span-2 xl:col-span-3">
+            还没有历史个人计划记录，新增请使用任务批次流程。
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function planListData() {
+    return {
+        monthFilter: '{{ current_month }}',
+        statusFilter: '{{ current_status }}',
+        filterList() {
+            const params = new URLSearchParams();
+            if (this.monthFilter) params.append('month', this.monthFilter);
+            if (this.statusFilter) params.append('status', this.statusFilter);
+            window.location.href = `{% url 'plans:my_plans' %}?${params.toString()}`;
+        }
+    };
+}
+</script>
+{% endblock %}

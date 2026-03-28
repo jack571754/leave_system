@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}任务报表{% endblock %}
+{% block page_title %}任务报表{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/report.css' %}">
+{% endblock %}
+
+{% block content %}
+{{ records|json_script:"report-records" }}
+<script id="report-config" type="application/json">
+{
+    "planMonth": "{{ plan_month|escapejs }}",
+    "groupBy": "{{ group_by|escapejs }}",
+    "approvalStatus": "{{ approval_status|escapejs }}",
+    "reportUrl": "{% url 'plans:plan_report' %}",
+    "exportUrl": "{% url 'plans:export_report' %}"
+}
+</script>
+
+<div x-data="reportData()" x-init="init()" class="space-y-4">
+    <section class="report-hero app-card p-4">
+        <div class="grid gap-3 xl:grid-cols-[1.25fr_1fr]">
+            <div>
+                <p class="text-[11px] uppercase tracking-[0.3em] text-slate-400">Task Reporting</p>
+                <h3 class="mt-1 text-sm font-bold font-heading text-slate-900">{{ plan_month }} 任务汇总报表</h3>
+                <p class="mt-2 max-w-3xl text-xs text-slate-500">
+                    聚合当前筛选范围内的任务明细，支持按组织、平台、店铺、品牌、分类和 SKU 查看销量与销售额表现。
+                </p>
+            </div>
+            <div class="grid gap-3 sm:grid-cols-3">
+                <div class="app-metric-card">
+                    <div class="text-[11px] uppercase tracking-[0.18em] text-slate-400">总销量</div>
+                    <div class="mt-2 text-2xl font-bold font-heading tabular-nums text-slate-900">{{ total_qty }}</div>
+                </div>
+                <div class="app-metric-card">
+                    <div class="text-[11px] uppercase tracking-[0.18em] text-slate-400">总销售额</div>
+                    <div class="mt-2 text-2xl font-bold font-heading tabular-nums text-brand-700">{{ total_amount|floatformat:0 }}</div>
+                </div>
+                <div class="app-metric-card">
+                    <div class="text-[11px] uppercase tracking-[0.18em] text-slate-400">明细行数</div>
+                    <div class="mt-2 text-2xl font-bold font-heading tabular-nums text-slate-900">{{ records|length }}</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="app-card p-4">
+        <div class="grid gap-3 xl:grid-cols-[180px_220px_220px_1fr_auto] xl:items-end">
+            <div>
+                <label class="mb-1.5 block text-xs font-medium text-slate-600">计划月份</label>
+                <input type="month" x-model="planMonth" @change="loadReport()" class="w-full rounded-md border border-slate-300 px-3 py-2 text-xs">
+            </div>
+            <div>
+                <label class="mb-1.5 block text-xs font-medium text-slate-600">分组维度</label>
+                <select x-model="groupBy" @change="loadReport()" class="w-full rounded-md border border-slate-300 px-3 py-2 text-xs">
+                    <option value="department">部门</option>
+                    <option value="group">小组</option>
+                    <option value="platform">平台</option>
+                    <option value="store">店铺</option>
+                    <option value="brand">品牌</option>
+                    <option value="category">分类</option>
+                    <option value="sku">SKU</option>
+                </select>
+            </div>
+            <div>
+                <label class="mb-1.5 block text-xs font-medium text-slate-600">审批状态</label>
+                <select x-model="approvalStatus" @change="loadReport()" class="w-full rounded-md border border-slate-300 px-3 py-2 text-xs">
+                    {% for value, label in approval_status_choices %}
+                    <option value="{{ value }}" {% if approval_status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500">
+                当前按 <span class="font-medium text-slate-800">{{ group_by_display }}</span> 汇总
+                <span class="ml-3">审批状态：{{ approval_status }}</span>
+            </div>
+            <a href="{% url 'plans:export_report' %}?month={{ plan_month }}&approval_status={{ approval_status }}" :href="exportUrl()" class="rounded-lg bg-green-600 px-3 py-1.5 text-xs text-white hover:bg-green-700">导出 CSV</a>
+        </div>
+    </section>
+
+    <section class="app-card p-4">
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div>
+                <h4 class="app-section-title">汇总视图</h4>
+                <p class="mt-0.5 text-xs text-slate-500">按 {{ group_by_display }} 聚合展示任务明细的销量、销售额和记录数。</p>
+            </div>
+        </div>
+
+        {% if summary %}
+        <div class="overflow-hidden rounded-lg border border-slate-200">
+            <table class="min-w-full divide-y divide-slate-200 text-xs">
+                <thead class="bg-slate-50 text-left text-slate-500">
+                    <tr>
+                        <th class="px-3 py-2">分组名称</th>
+                        <th class="px-3 py-2 text-right">总销量</th>
+                        <th class="px-3 py-2 text-right">总销售额</th>
+                        <th class="px-3 py-2 text-right">记录数</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                    {% for key, item in summary.items %}
+                    <tr>
+                        <td class="px-3 py-2 font-medium text-slate-900">{{ key }}</td>
+                        <td class="px-3 py-2 text-right tabular-nums font-mono text-slate-600">{{ item.qty }}</td>
+                        <td class="px-3 py-2 text-right tabular-nums font-mono text-slate-600">{{ item.amount|floatformat:2 }}</td>
+                        <td class="px-3 py-2 text-right tabular-nums font-mono text-slate-600">{{ item.count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="app-empty-state">
+            当前筛选条件下没有可展示的报表数据。
+        </div>
+        {% endif %}
+    </section>
+
+    {% if records %}
+    <section class="app-card p-4">
+        <div class="mb-3 flex items-center justify-between gap-2">
+            <div>
+                <h4 class="app-section-title">任务明细</h4>
+                <p class="app-section-copy mt-0.5">展示前 100 条匹配的任务记录，用于快速核对来源数据。</p>
+            </div>
+            <div class="text-[11px] uppercase tracking-[0.18em] text-slate-400">Filtered Task Rows</div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-xs">
+                <thead class="bg-slate-50 text-left text-slate-500">
+                    <tr>
+                        <th class="px-3 py-2">店铺</th>
+                        <th class="px-3 py-2">品牌</th>
+                        <th class="px-3 py-2">分类</th>
+                        <th class="px-3 py-2">SKU</th>
+                        <th class="px-3 py-2">目标月份</th>
+                        <th class="px-3 py-2 text-right">销量</th>
+                        <th class="px-3 py-2 text-right">库存</th>
+                        <th class="px-3 py-2 text-right">销售额</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                    {% for record in records|slice:":100" %}
+                    <tr>
+                        <td class="px-3 py-2">{{ record.store }}</td>
+                        <td class="px-3 py-2">{{ record.brand }}</td>
+                        <td class="px-3 py-2">{{ record.category }}</td>
+                        <td class="px-3 py-2">{{ record.sku }}</td>
+                        <td class="px-3 py-2">{{ record.target_month }}</td>
+                        <td class="px-3 py-2 text-right tabular-nums font-mono">{{ record.sales_qty }}</td>
+                        <td class="px-3 py-2 text-right tabular-nums font-mono">{{ record.stock_qty }}</td>
+                        <td class="px-3 py-2 text-right tabular-nums font-mono">{{ record.sales_amount|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/report.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,103 @@
+/* ============================================================
+ * Sales Plan System — Admin Custom Styles
+ * Complements django-unfold with compact density and brand alignment
+ * ============================================================ */
+
+/* --- Compact list table density --- */
+.change-list .results table td,
+.change-list .results table th {
+    padding: 6px 10px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* --- Tabular-nums for numeric data --- */
+.nowrap,
+.field-unit_price,
+.field-cost_price,
+.field-sales_qty,
+.field-stock_qty,
+.field-total_qty,
+.field-total_amount,
+.field-row_total_qty,
+.field-row_total_amount,
+.field-amount {
+    font-variant-numeric: tabular-nums;
+    font-family: 'IBM Plex Mono', 'Consolas', monospace;
+}
+
+/* --- Status label contrast boost --- */
+.label-success, .badge-success,
+.tag-success {
+    background-color: #16a34a !important;
+    color: #fff !important;
+}
+
+.label-danger, .badge-danger,
+.tag-danger,
+.label-important {
+    background-color: #dc2626 !important;
+    color: #fff !important;
+}
+
+.label-warning, .badge-warning,
+.tag-warning {
+    background-color: #d97706 !important;
+    color: #fff !important;
+}
+
+.label-info, .badge-info,
+.tag-info {
+    background-color: #2563eb !important;
+    color: #fff !important;
+}
+
+/* --- Subtle row hover --- */
+.change-list .results table tbody tr:hover td {
+    background-color: #f8fafc;
+}
+
+/* --- Breadcrumbs: lighter separator --- */
+.breadcrumbs span {
+    color: #94a3b8;
+    margin: 0 2px;
+}
+
+/* --- Changelist: search bar focus --- */
+#changelist-search {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 0 1px rgba(37, 99,235,0.1) !important;
+}
+
+/* --- Form field labels: slightly smaller --- */
+form .form-row label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+}
+
+/* --- Related widget spacing --- */
+.selector .selector-add,
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+/* --- Scrollable fieldsets with thin borders --- */
+fieldset.module {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    margin-bottom: 12px;
+}
+
+/* --- Pagination: compact --- */
+.pagination {
+    font-size: 13px;
+}
+
+/* --- Dark theme fixes --- */
+@media (prefers-color-scheme: dark) {
+    .change-list .results table tbody tr:hover td {
+        background-color: #1e293b;
+    }
+}

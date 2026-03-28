@@ -1,0 +1,268 @@
+:root {
+    --app-bg: #eee7df;
+    --app-bg-soft: #f5efe8;
+    --app-surface: rgba(255, 251, 247, 0.68);
+    --app-surface-strong: rgba(255, 253, 250, 0.82);
+    --app-panel: rgba(38, 38, 42, 0.96);
+    --app-ink: #312a25;
+    --app-ink-soft: #776c65;
+    --app-border: rgba(155, 138, 124, 0.16);
+    --app-gold: #b8924f;
+    --app-saffron: #b7791f;
+    --app-blue: #234ad3;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    background: var(--app-bg);
+}
+
+body {
+    margin: 0;
+    font-family: 'Manrope', system-ui, sans-serif;
+    background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 36%),
+        radial-gradient(circle at 90% 18%, rgba(255, 255, 255, 0.42), transparent 26%),
+        linear-gradient(180deg, #f7f1ea 0%, #eee7df 56%, #ebe3da 100%);
+    color: var(--app-ink);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-heading {
+    font-family: 'Sora', system-ui, sans-serif;
+}
+
+.font-mono,
+.tabular-nums {
+    font-family: 'Sora', system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+}
+
+.font-accent {
+    font-family: 'Cormorant Garamond', serif;
+}
+
+.app-body {
+    position: relative;
+}
+
+.app-noise {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    opacity: 0.14;
+    background-image:
+        radial-gradient(rgba(102, 89, 77, 0.12) 0.55px, transparent 0.55px),
+        radial-gradient(rgba(255, 255, 255, 0.55) 0.55px, transparent 0.55px);
+    background-position: 0 0, 12px 12px;
+    background-size: 24px 24px;
+    mix-blend-mode: soft-light;
+}
+
+.app-shell {
+    background:
+        linear-gradient(135deg, rgba(255, 252, 248, 0.78), rgba(245, 238, 230, 0.7)),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.3));
+    backdrop-filter: blur(24px);
+}
+
+.app-sidebar {
+    background:
+        radial-gradient(circle at top, rgba(255, 255, 255, 0.06), transparent 22%),
+        linear-gradient(180deg, #212225 0%, #25262a 48%, #1d1e22 100%);
+    box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.06);
+}
+
+.app-nav-item {
+    border: 1px solid transparent;
+}
+
+.app-nav-item svg {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.app-nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.app-nav-item.is-active {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+    border-color: rgba(219, 196, 149, 0.12);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 12px 24px rgba(0, 0, 0, 0.14);
+}
+
+.app-nav-item.is-active svg {
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.app-header {
+    background: linear-gradient(180deg, rgba(255, 252, 248, 0.48), rgba(255, 252, 248, 0.14));
+    border-bottom: 1px solid rgba(153, 138, 126, 0.12);
+    backdrop-filter: blur(18px);
+}
+
+.app-clock {
+    line-height: 1.7;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+    width: 5px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+    background: rgba(206, 194, 179, 0.18);
+    border-radius: 999px;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes sheenSweep {
+    0% {
+        transform: translateX(-120%) skewX(-24deg);
+        opacity: 0;
+    }
+
+    30% {
+        opacity: 0.55;
+    }
+
+    100% {
+        transform: translateX(180%) skewX(-24deg);
+        opacity: 0;
+    }
+}
+
+.page-enter {
+    animation: fadeInUp 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.table-row-hover:hover {
+    background-color: rgba(255, 255, 255, 0.55);
+}
+
+.app-content-shell {
+    height: calc(100vh - 98px);
+}
+
+.app-card {
+    border: 1px solid var(--app-border);
+    background: var(--app-surface);
+    border-radius: 1.5rem;
+    box-shadow: 0 24px 48px rgba(111, 93, 75, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.74);
+    backdrop-filter: blur(16px);
+}
+
+.app-card-muted {
+    background: linear-gradient(180deg, rgba(255, 252, 248, 0.72), rgba(250, 245, 239, 0.58));
+}
+
+.app-metric-card {
+    border: 1px solid rgba(160, 145, 131, 0.16);
+    border-radius: 1.5rem;
+    background: linear-gradient(180deg, rgba(255, 252, 248, 0.7), rgba(245, 239, 232, 0.58));
+    padding: 1.25rem;
+    box-shadow: 10px 10px 24px rgba(191, 180, 169, 0.3), -8px -8px 18px rgba(255, 255, 255, 0.78), inset 0 1px 0 rgba(255, 255, 255, 0.68);
+}
+
+.app-section-title {
+    color: var(--app-ink);
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.app-section-copy {
+    color: var(--app-ink-soft);
+    font-size: 0.8rem;
+    line-height: 1.7;
+}
+
+.app-empty-state {
+    border: 1px solid rgba(165, 149, 136, 0.18);
+    border-radius: 1.6rem;
+    background: linear-gradient(180deg, rgba(255, 253, 250, 0.64), rgba(245, 238, 230, 0.72));
+    color: var(--app-ink-soft);
+    padding: 2.75rem 1.5rem;
+    text-align: center;
+    font-size: 0.8rem;
+    box-shadow: 12px 12px 30px rgba(194, 183, 171, 0.24), -8px -8px 18px rgba(255, 255, 255, 0.72);
+}
+
+.app-empty-illustration {
+    margin: 0 auto 1rem;
+    display: block;
+    height: 88px;
+    width: 88px;
+    color: #a9998d;
+}
+
+.app-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 999px;
+    border: 1px solid rgba(184, 146, 79, 0.18);
+    background: rgba(255, 251, 246, 0.55);
+    padding: 0.48rem 0.85rem;
+    color: #856a3f;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.glass-button {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(126, 164, 255, 0.26);
+    background: linear-gradient(135deg, #a8c0ff 0%, #7ea4ff 30%, #5b89f4 100%);
+    color: white;
+    box-shadow: 0 16px 28px rgba(77, 114, 204, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.58);
+}
+
+.glass-button::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 22%, rgba(255, 255, 255, 0.45) 50%, transparent 78%);
+    animation: sheenSweep 4.4s ease-in-out infinite;
+}
+
+.app-link {
+    color: var(--app-blue);
+}
+
+.app-link:hover {
+    color: #1737a6;
+}
+
+.app-gold-text {
+    color: var(--app-gold);
+    text-shadow: 0 1px 0 rgba(255, 251, 243, 0.76);
+}
+
+.app-toast {
+    backdrop-filter: blur(18px);
+}

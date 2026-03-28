@@ -1,0 +1,20 @@
+<div class="rounded-lg border border-slate-200 bg-white p-2" id="sku-table">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-200">
+            <thead>
+                <tr class="text-left text-[11px] font-medium uppercase tracking-wide text-slate-500">
+                    <th class="px-3 py-2">SKU 编码</th>
+                    <th class="px-3 py-2">SKU 名称</th>
+                    <th class="px-3 py-2">品牌</th>
+                    <th class="px-3 py-2">品类</th>
+                    <th class="px-3 py-2 text-right">单价</th>
+                    <th class="px-3 py-2">状态</th>
+                    <th class="px-3 py-2">操作</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100" id="sku-table-body">
+                {% include 'products/partials/sku_table_rows.html' %}
+            </tbody>
+        </table>
+    </div>
+</div>

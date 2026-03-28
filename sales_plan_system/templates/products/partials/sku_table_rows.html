@@ -1,0 +1,31 @@
+{% for sku in page_obj %}
+<tr class="text-xs">
+    <td class="px-3 py-2 font-medium">{{ sku.sku_code }}</td>
+    <td class="px-3 py-2">
+        <div>{{ sku.sku_name }}</div>
+        <div class="text-[11px] text-slate-400">{{ sku.get_spec_display }}</div>
+    </td>
+    <td class="px-3 py-2 text-slate-500">{{ sku.brand.name|default:"-" }}</td>
+    <td class="px-3 py-2 text-slate-500">{{ sku.category.name|default:"-" }}</td>
+    <td class="px-3 py-2 text-right tabular-nums font-mono text-slate-500">{{ sku.unit_price }}</td>
+    <td class="px-3 py-2">
+        <span class="inline-block rounded-full px-2 py-0.5 text-[11px] font-medium {% if sku.status == 'active' %}bg-green-100 text-green-600{% elif sku.status == 'inactive' %}bg-slate-100 text-slate-600{% else %}bg-red-100 text-red-600{% endif %}">
+            {{ sku.get_status_display }}
+        </span>
+    </td>
+    <td class="px-3 py-2">
+        <div class="flex gap-3 text-xs">
+            <a href="{% url 'products:sku_detail' sku.pk %}" class="text-brand-600 hover:text-brand-700">查看</a>
+            <a href="{% url 'products:sku_edit' sku.pk %}" class="text-slate-700 hover:text-slate-900">编辑</a>
+            <form action="{% url 'products:sku_delete' sku.pk %}" method="post" onsubmit="return confirm('确认删除该 SKU 吗？');">
+                {% csrf_token %}
+                <button type="submit" class="text-red-600 hover:text-red-700">删除</button>
+            </form>
+        </div>
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="7" class="px-3 py-8 text-center text-xs text-slate-500">暂无 SKU 数据。</td>
+</tr>
+{% endfor %}

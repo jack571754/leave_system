@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}首页看板 - 销售计划系统{% endblock %}
+{% block page_title %}首页看板{% endblock %}
+
+{% block content %}
+<div x-data="dashboardData()" x-init="init()" class="space-y-4 page-enter">
+
+    <!-- Stat Cards -->
+    <section class="grid gap-3 xl:grid-cols-4">
+        <template x-for="(card, index) in statCards" :key="card.key">
+            <div class="rounded-lg border bg-white p-4 transition-shadow hover:shadow-sm"
+                 :class="card.borderClass">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500" x-text="card.label"></p>
+                        <p class="mt-2 text-2xl font-bold tabular-nums font-heading"
+                           :class="card.valueClass"
+                           x-text="stats[card.key]">0</p>
+                    </div>
+                    <div class="rounded-md p-1.5" :class="card.iconBg">
+                        <template x-html="card.icon"></template>
+                    </div>
+                </div>
+                <p class="mt-2 text-[11px]" :class="card.descClass" x-text="card.description"></p>
+            </div>
+        </template>
+    </section>
+
+    <!-- Quick Start + My Overview -->
+    <section class="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
+
+        <!-- Quick Start -->
+        <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <p class="text-[11px] font-medium uppercase tracking-wider text-slate-400">Quick Start</p>
+            <h3 class="mt-1 text-lg font-bold text-slate-900 font-heading">常用入口</h3>
+
+            <div class="mt-4 grid gap-3 md:grid-cols-3">
+                <a href="{% url 'plans:campaign_create' %}"
+                   class="group flex items-start gap-3 rounded-lg bg-brand-700 px-4 py-3.5 text-white transition-all hover:bg-brand-800 hover:shadow-md hover:shadow-brand-700/20">
+                    <div class="rounded-md bg-white/15 p-1.5 transition-transform group-hover:scale-110">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold">创建计划批次</p>
+                        <p class="mt-1 text-[11px] text-brand-200">选门店后自动生成填报任务</p>
+                    </div>
+                </a>
+
+                <a href="{% url 'plans:my_tasks' %}"
+                   class="group flex items-start gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3.5 transition-all hover:border-slate-300 hover:shadow-sm">
+                    <div class="rounded-md bg-slate-100 p-1.5 transition-all group-hover:bg-slate-200 group-hover:scale-110">
+                        <svg class="h-4 w-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2m0 0h2a2 2 0 012 2"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-900">进入我的任务</p>
+                        <p class="mt-1 text-[11px] text-slate-500">填写、追踪和提交门店任务</p>
+                    </div>
+                </a>
+
+                <a href="{% url 'products:sku_list' %}"
+                   class="group flex items-start gap-3 rounded-lg border border-brand-100 bg-brand-50 px-4 py-3.5 transition-all hover:border-brand-200 hover:shadow-sm">
+                    <div class="rounded-md bg-brand-100 p-1.5 transition-all group-hover:bg-brand-200 group-hover:scale-110">
+                        <svg class="h-4 w-4 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-brand-900">维护 SKU</p>
+                        <p class="mt-1 text-[11px] text-brand-600">补齐商品主数据</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- My Overview -->
+        <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold text-slate-900 font-heading">我的概览</h3>
+                <a href="{% url 'approvals:center' %}"
+                   class="flex items-center gap-1 text-xs text-brand-600 transition-colors hover:text-brand-700">
+                    进入审批中心
+                    <svg class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+            <dl class="mt-3 space-y-2">
+                <div class="flex items-center justify-between rounded-md bg-slate-50 px-3 py-2.5 transition-colors hover:bg-slate-100">
+                    <dt class="flex items-center gap-2 text-xs text-slate-500">
+                        <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                        我本月任务
+                    </dt>
+                    <dd class="text-lg font-bold tabular-nums font-mono text-slate-900" x-text="stats.my_tasks">0</dd>
+                </div>
+                <div class="flex items-center justify-between rounded-md bg-brand-50 px-3 py-2.5 transition-colors hover:bg-brand-100">
+                    <dt class="flex items-center gap-2 text-xs text-brand-700">
+                        <span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span>
+                        我已提交
+                    </dt>
+                    <dd class="text-lg font-bold tabular-nums font-mono text-brand-700" x-text="stats.my_submitted_tasks">0</dd>
+                </div>
+                <div class="flex items-center justify-between rounded-md bg-red-50 px-3 py-2.5 transition-colors hover:bg-red-100">
+                    <dt class="flex items-center gap-2 text-xs text-red-600">
+                        <span class="relative flex h-1.5 w-1.5">
+                            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+                            <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                        </span>
+                        待我审批
+                    </dt>
+                    <dd class="text-lg font-bold tabular-nums font-mono text-red-600" x-text="stats.pending_approval">0</dd>
+                </div>
+            </dl>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function dashboardData() {
+    return {
+        isLoading: true,
+        stats: {
+            current_month: '-',
+            total_campaigns: 0,
+            total_tasks: 0,
+            submitted_tasks: 0,
+            approved_tasks: 0,
+            my_tasks: 0,
+            my_submitted_tasks: 0,
+            pending_approval: 0
+        },
+        statCards: [
+            {
+                label: '本月批次数',
+                key: 'total_campaigns',
+                valueClass: 'text-slate-900',
+                descClass: 'text-slate-400',
+                borderClass: 'border-slate-200',
+                iconBg: 'bg-slate-100',
+                icon: '<svg class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2zm-2-4V5a2 2 0 012-2h6a2 2 0 012 2v2"/></svg>',
+                description: '-'
+            },
+            {
+                label: '本月任务数',
+                key: 'total_tasks',
+                valueClass: 'text-brand-700',
+                descClass: 'text-brand-600',
+                borderClass: 'border-brand-100',
+                iconBg: 'bg-brand-50',
+                icon: '<svg class="h-4 w-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2m0 0h2a2 2 0 012 2"/></svg>',
+                description: '按门店拆分后的填报任务'
+            },
+            {
+                label: '待审核任务',
+                key: 'submitted_tasks',
+                valueClass: 'text-amber-600',
+                descClass: 'text-amber-500',
+                borderClass: 'border-amber-100',
+                iconBg: 'bg-amber-50',
+                icon: '<svg class="h-4 w-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+                description: '已提交，等待审批'
+            },
+            {
+                label: '已通过任务',
+                key: 'approved_tasks',
+                valueClass: 'text-green-600',
+                descClass: 'text-green-500',
+                borderClass: 'border-green-100',
+                iconBg: 'bg-green-50',
+                icon: '<svg class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+                description: '本月已完成审批'
+            }
+        ],
+        init() {
+            fetch('{% url "plans:plan_summary_api" %}')
+                .then(response => response.json())
+                .then(data => {
+                    this.stats = data;
+                    this.isLoading = false;
+                    if (data.current_month) {
+                        this.statCards[0].description = data.current_month;
+                    }
+                })
+                .catch(() => { this.isLoading = false; });
+        }
+    };
+}
+</script>
+{% endblock %}

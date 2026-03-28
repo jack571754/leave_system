@@ -1,0 +1,36 @@
+.task-shell {
+    background:
+        radial-gradient(circle at top left, rgba(30, 64, 175, 0.06), transparent 28%),
+        linear-gradient(180deg, rgba(15, 23, 42, 0.01), rgba(15, 23, 42, 0));
+}
+
+.grid-toolbar {
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.95), rgba(255, 255, 255, 0.95));
+    backdrop-filter: blur(10px);
+}
+
+#task-vtable-container,
+#task-vtable-container.is-empty {
+    display: none;
+    min-height: 0;
+    background: transparent;
+}
+
+#task-vtable-container canvas {
+    border-radius: 8px;
+}
+
+.grid-error {
+    display: flex;
+    min-height: 100px;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: #dc2626;
+    background: #fef2f2;
+    border-top: 1px solid #fecaca;
+}
+
+.report-fallback.is-enhanced {
+    display: none;
+}

@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}任务详情{% endblock %}
+{% block page_title %}任务详情{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/task-detail.css' %}">
+{% endblock %}
+
+{% block content %}
+{{ s2_records|json_script:"task-grid-records" }}
+{{ target_months|json_script:"task-target-months" }}
+<script id="task-editor-config" type="application/json">
+{
+    "canEdit": {{ can_edit|yesno:"true,false" }},
+    "updateCellUrl": "{% url 'plans:update_task_cell' task.pk %}",
+    "csrfToken": "{{ csrf_token }}"
+}
+</script>
+
+<div x-data="taskEditor()" x-init="init()" class="space-y-4">
+    <section class="task-shell overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div class="grid gap-4 px-4 py-4 lg:grid-cols-[1.4fr_0.9fr]">
+            <div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="text-xl font-bold text-slate-900 font-heading">{{ task.store.name }}</h3>
+                    <span class="inline-block rounded-full px-2 py-0.5 text-[11px] font-medium
+                        {% if task.status == 'draft' %}bg-slate-100 text-slate-600
+                        {% elif task.status == 'submitted' %}bg-amber-50 text-amber-700
+                        {% elif task.status == 'approved' %}bg-green-50 text-green-700
+                        {% else %}bg-red-50 text-red-700{% endif %}">
+                        {{ task.get_status_display }}
+                    </span>
+                    {% if can_edit %}
+                    <span class="inline-block rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700">可编辑</span>
+                    {% else %}
+                    <span class="inline-block rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">只读</span>
+                    {% endif %}
+                </div>
+
+                <div class="mt-3 grid gap-2 text-xs md:grid-cols-2 xl:grid-cols-4">
+                    <div class="rounded-md border border-slate-200 bg-white px-3 py-2">
+                        <div class="text-[10px] font-medium uppercase tracking-wider text-slate-400">任务批次</div>
+                        <div class="mt-1 font-medium text-slate-900">{{ task.campaign.title }}</div>
+                    </div>
+                    <div class="rounded-md border border-slate-200 bg-white px-3 py-2">
+                        <div class="text-[10px] font-medium uppercase tracking-wider text-slate-400">计划月份</div>
+                        <div class="mt-1 font-medium text-slate-900">{{ task.campaign.plan_month }}</div>
+                    </div>
+                    <div class="rounded-md border border-slate-200 bg-white px-3 py-2">
+                        <div class="text-[10px] font-medium uppercase tracking-wider text-slate-400">所属组织</div>
+                        <div class="mt-1 font-medium text-slate-900">{{ task.org_unit.get_full_path|default:"-" }}</div>
+                    </div>
+                    <div class="rounded-md border border-slate-200 bg-white px-3 py-2">
+                        <div class="text-[10px] font-medium uppercase tracking-wider text-slate-400">负责人</div>
+                        <div class="mt-1 font-medium text-slate-900">{{ task.assignee.get_full_name|default:task.assignee.username|default:"-" }}</div>
+                    </div>
+                </div>
+
+                {% if task.remark %}
+                <p class="mt-3 rounded-md bg-slate-900 px-3 py-2 text-xs text-slate-200">{{ task.remark }}</p>
+                {% endif %}
+            </div>
+
+            <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                <div class="rounded-md border border-slate-200 bg-white px-3 py-3">
+                    <div class="text-[10px] font-medium uppercase tracking-wider text-slate-400">SKU 行数</div>
+                    <div class="mt-2 text-2xl font-bold tabular-nums font-heading text-slate-900" x-text="stats.skuRows">{{ matrix_rows|length }}</div>
+                </div>
+                <div class="rounded-md border border-slate-200 bg-white px-3 py-3">
+                    <div class="text-[10px] font-medium uppercase tracking-wider text-slate-400">总销量</div>
+                    <div class="mt-2 text-2xl font-bold tabular-nums font-heading text-slate-900" x-text="formatNumber(stats.totalQty)">0</div>
+                </div>
+                <div class="rounded-md border border-slate-200 bg-white px-3 py-3">
+                    <div class="text-[10px] font-medium uppercase tracking-wider text-slate-400">总销售额</div>
+                    <div class="mt-2 text-2xl font-bold tabular-nums font-heading text-brand-700" x-text="formatMoney(stats.totalAmount)">0.00</div>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        <a href="{% url 'plans:my_tasks' %}" class="rounded-md border border-slate-300 px-2.5 py-1.5 text-[11px] text-slate-600 transition hover:bg-slate-50">返回任务列表</a>
+                        <a href="{% url 'plans:export_task' task.pk %}" class="rounded-md border border-slate-300 px-2.5 py-1.5 text-[11px] text-slate-600 transition hover:bg-slate-50">导出明细</a>
+                        {% if can_submit %}
+                        <form action="{% url 'plans:submit_task' task.pk %}" method="post" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="rounded-md bg-brand-700 px-2.5 py-1.5 text-[11px] font-medium text-white transition hover:bg-brand-800">提交任务</button>
+                        </form>
+                        {% endif %}
+                        {% if can_withdraw %}
+                        <form action="{% url 'plans:withdraw_task' task.pk %}" method="post" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="rounded-md bg-amber-500 px-2.5 py-1.5 text-[11px] font-medium text-white transition hover:bg-amber-600">撤回提交</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% if can_edit %}
+    <section class="app-card p-4">
+        <div class="mb-3 flex flex-wrap items-center gap-2">
+            <a href="{% url 'plans:task_import_template' task.pk %}" class="rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-600 transition hover:bg-slate-50">下载导入模板</a>
+            <form action="{% url 'plans:task_import_confirm' task.pk %}" method="post" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="rounded-md bg-green-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-green-700">确认导入预览</button>
+            </form>
+            <form action="{% url 'plans:task_import_preview' task.pk %}" method="post" enctype="multipart/form-data" class="inline-flex items-center gap-2">
+                {% csrf_token %}
+                <input type="file" name="file" accept=".xlsx,.csv" class="rounded-md border border-slate-300 px-3 py-1.5 text-xs">
+                <button type="submit" class="rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-600 transition hover:bg-slate-50">上传并生成预览</button>
+            </form>
+        </div>
+
+        {% if preview_rows %}
+        <div class="mb-3 flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-3 py-2">
+            <svg class="h-3.5 w-3.5 shrink-0 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div>
+                <p class="text-xs font-medium text-green-800">导入预览已生成</p>
+                <p class="text-[11px] text-green-700">当前预览包含 {{ preview_rows|length }} 条 SKU 数据，确认后将写入任务明细。</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if import_errors %}
+        <div class="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2">
+            <p class="text-xs font-medium text-red-800">导入校验问题</p>
+            <ul class="mt-1 space-y-0.5 text-[11px] text-red-700">
+                {% for error in import_errors %}
+                <li>第 {{ error.row }} 行：{{ error.message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="flex items-center justify-between">
+            <h4 class="app-section-title">新增 SKU</h4>
+            <span class="text-[11px] text-slate-400">候选列表仅显示前 30 条匹配结果</span>
+        </div>
+
+        <form method="get" class="mt-2 flex flex-wrap items-center gap-2">
+            <input type="text" name="sku_q" value="{{ sku_q }}" placeholder="搜索 SKU 编码或名称"
+                   class="w-52 rounded-md border border-slate-300 px-3 py-1.5 text-xs outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20">
+            <select name="brand" class="rounded-md border border-slate-300 px-3 py-1.5 text-xs">
+                <option value="">全部品牌</option>
+                {% for brand_pk, brand_name in brands %}
+                <option value="{{ brand_pk }}" {% if brand_id == brand_pk|stringformat:'s' %}selected{% endif %}>{{ brand_name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50">筛选 SKU</button>
+        </form>
+
+        <form action="{% url 'plans:add_task_items' task.pk %}" method="post" class="mt-3 space-y-3">
+            {% csrf_token %}
+            <div class="flex flex-wrap items-end gap-2">
+                <div>
+                    <label class="mb-1 block text-[11px] font-medium text-slate-500">备注</label>
+                    <input type="text" name="remark" placeholder="为新增的 SKU 写一条说明" class="rounded-md border border-slate-300 px-3 py-1.5 text-xs">
+                </div>
+                <div>
+                    <label class="mb-1 block text-[11px] font-medium text-slate-500">单价</label>
+                    <input type="number" name="unit_price" min="0" step="0.01" placeholder="0.00" class="w-24 rounded-md border border-slate-300 px-3 py-1.5 text-right text-xs font-mono">
+                </div>
+                <button type="submit" class="rounded-md bg-brand-700 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-brand-800">加入选中 SKU</button>
+            </div>
+
+            <div class="max-h-[300px] overflow-auto rounded-md border border-slate-200">
+                <table class="min-w-full text-xs">
+                    <thead class="bg-slate-50 text-left text-slate-500">
+                        <tr>
+                            <th class="px-3 py-2"><input type="checkbox" onclick="document.querySelectorAll('input[name=&quot;sku_ids&quot;]').forEach(el => el.checked = this.checked)"></th>
+                            <th class="px-3 py-2">SKU</th>
+                            <th class="px-3 py-2">品牌</th>
+                            <th class="px-3 py-2 text-right">默认单价</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for sku in available_skus %}
+                        <tr class="table-row-hover">
+                            <td class="px-3 py-2"><input type="checkbox" name="sku_ids" value="{{ sku.pk }}"></td>
+                            <td class="px-3 py-2">
+                                <div class="font-medium text-slate-900">{{ sku.sku_code }}</div>
+                                <div class="text-[11px] text-slate-400">{{ sku.sku_name }}</div>
+                            </td>
+                            <td class="px-3 py-2 text-slate-600">{{ sku.brand.name|default:"-" }}</td>
+                            <td class="px-3 py-2 text-right tabular-nums font-mono text-slate-600">{{ sku.unit_price }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="px-3 py-8 text-center text-xs text-slate-400">当前筛选条件下没有可用 SKU。</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </section>
+
+    {% if matrix_rows %}
+    <section class="app-card p-4">
+        <h4 class="app-section-title">批量移除 SKU</h4>
+        <p class="mt-0.5 text-[11px] text-slate-500">勾选需要清理的 SKU 后执行删除，当前任务下的全部月份明细会一并移除。</p>
+        <form action="{% url 'plans:bulk_delete_task_items' task.pk %}" method="post" class="mt-3 space-y-3">
+            {% csrf_token %}
+            <div class="max-h-[200px] overflow-auto rounded-md border border-slate-200">
+                <table class="min-w-full text-xs">
+                    <thead class="bg-slate-50 text-left text-slate-500">
+                        <tr>
+                            <th class="px-3 py-2"><input type="checkbox" onclick="document.querySelectorAll('input[name=&quot;sku_ids&quot;][data-delete-row]').forEach(el => el.checked = this.checked)"></th>
+                            <th class="px-3 py-2">SKU</th>
+                            <th class="px-3 py-2 text-right">单价</th>
+                            <th class="px-3 py-2 text-right">合计销量</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for row in matrix_rows %}
+                        <tr>
+                            <td class="px-3 py-2"><input type="checkbox" name="sku_ids" value="{{ row.sku.pk }}" data-delete-row></td>
+                            <td class="px-3 py-2">
+                                <div class="font-medium text-slate-900">{{ row.sku.sku_code }}</div>
+                                <div class="text-[11px] text-slate-400">{{ row.sku.sku_name }}</div>
+                            </td>
+                            <td class="px-3 py-2 text-right tabular-nums font-mono text-slate-600">{{ row.unit_price }}</td>
+                            <td class="px-3 py-2 text-right tabular-nums font-mono text-slate-600">{{ row.row_total_qty }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <button type="submit" class="rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-700">删除选中 SKU</button>
+        </form>
+    </section>
+    {% endif %}
+    {% endif %}
+
+    <section class="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div class="grid-toolbar flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
+            <div>
+                <h4 class="app-section-title">SKU 明细矩阵</h4>
+                <p class="mt-0.5 text-[11px] text-slate-500">
+                    展示 M+1 到 M+4 的销量、库存和销售额。
+                    {% if can_edit %}当前页面支持直接编辑任务矩阵。{% else %}当前页面为只读状态。{% endif %}
+                </p>
+            </div>
+            <div class="flex items-center gap-2 text-[11px]">
+                <span class="rounded-md bg-slate-100 px-2.5 py-1 text-slate-500">优先展示服务端表格，前端增强为可选项</span>
+                <span x-show="saving" x-cloak class="rounded-md bg-amber-50 px-2.5 py-1 text-amber-700">正在保存...</span>
+            </div>
+        </div>
+        <div id="task-vtable-container"></div>
+        <div id="task-report-fallback" class="report-fallback border-t border-slate-200 bg-white">
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-xs">
+                    <thead class="bg-slate-50 text-left text-slate-500">
+                        <tr>
+                            <th class="sticky left-0 z-10 bg-slate-50 px-3 py-2">SKU</th>
+                            <th class="px-3 py-2">品牌</th>
+                            <th class="px-3 py-2 text-right">单价</th>
+                            {% for month in target_months %}
+                            <th class="px-3 py-2 text-right">{{ month }} 销量</th>
+                            <th class="px-3 py-2 text-right">{{ month }} 库存</th>
+                            {% endfor %}
+                            <th class="px-3 py-2 text-right">合计销量</th>
+                            <th class="px-3 py-2 text-right">合计销售额</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for row in matrix_rows %}
+                        <tr class="table-row-hover">
+                            <td class="sticky left-0 z-10 bg-white px-3 py-2">
+                                <div class="font-medium text-slate-900">{{ row.sku.sku_code }}</div>
+                                <div class="text-[11px] text-slate-400">{{ row.sku.sku_name }}</div>
+                            </td>
+                            <td class="px-3 py-2 text-slate-600">{{ row.sku.brand.name|default:"-" }}</td>
+                            <td class="px-3 py-2 text-right tabular-nums font-mono text-slate-600">{{ row.unit_price }}</td>
+                            {% for cell in row.month_cells %}
+                            <td class="px-3 py-2 text-right tabular-nums font-mono text-slate-600">{{ cell.sales_qty }}</td>
+                            <td class="px-3 py-2 text-right tabular-nums font-mono text-slate-600">{{ cell.stock_qty }}</td>
+                            {% endfor %}
+                            <td class="px-3 py-2 text-right tabular-nums font-mono font-medium text-slate-900">{{ row.row_total_qty }}</td>
+                            <td class="px-3 py-2 text-right tabular-nums font-mono font-medium text-brand-700">{{ row.row_total_amount }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="13" class="px-3 py-8 text-center text-xs text-slate-400">当前任务还没有明细数据。</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    {% if not can_edit %}
+    <section class="app-card p-4">
+        <p class="text-xs text-slate-500">当前任务状态为 <span class="font-medium text-slate-700">{{ task.get_status_display }}</span>，因此只允许查看，不允许继续编辑。</p>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/task-detail.js' %}"></script>
+{% endblock %}

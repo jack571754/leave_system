@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="space-y-4">
+    <section class="rounded-lg border border-slate-200 bg-white p-4">
+        <div class="max-w-3xl space-y-3">
+            <div class="inline-block rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.15em] text-slate-500">
+                {{ module_name }}
+            </div>
+            <h3 class="text-sm font-bold font-heading text-slate-900">{{ title }}</h3>
+            <p class="text-xs leading-5 text-slate-600">{{ subtitle }}</p>
+            <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-xs text-slate-500">
+                当前页面已经接入系统框架。后续功能会在独立业务域内继续扩展，不会影响现有任务、审批和报表链路。
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

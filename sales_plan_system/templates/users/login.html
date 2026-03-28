@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 销售计划系统</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: {
+                    heading: ['Outfit', 'system-ui', 'sans-serif'],
+                    body: ['IBM Plex Sans', 'system-ui', 'sans-serif'],
+                    mono: ['IBM Plex Mono', 'Consolas', 'monospace'],
+                },
+                colors: {
+                    brand: {
+                        50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe',
+                        300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6',
+                        600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af',
+                        900: '#1e3a8a', 950: '#172554',
+                    },
+                },
+            },
+        },
+    }
+    </script>
+    <style>
+        body { font-family: 'IBM Plex Sans', system-ui, sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-heading { font-family: 'Outfit', system-ui, sans-serif; }
+        .grid-pattern {
+            background-image:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-brand-900 via-slate-900 to-slate-950">
+    <div class="mx-auto flex min-h-screen max-w-5xl items-center px-6 py-12">
+        <div class="grid w-full gap-0 overflow-hidden rounded-xl lg:grid-cols-[1.1fr_420px]">
+            <!-- Left Panel -->
+            <div class="grid-pattern hidden rounded-l-xl bg-slate-900/50 p-8 backdrop-blur-sm lg:block">
+                <div class="flex h-full flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-2.5">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-md bg-brand-600 text-sm font-bold text-white">SP</div>
+                            <div>
+                                <p class="text-sm font-semibold text-white font-heading">销售计划系统</p>
+                            </div>
+                        </div>
+
+                        <h1 class="mt-10 text-3xl font-bold leading-snug text-white font-heading">
+                            销售计划提报、<br>审批与汇总，<br>一体化完成。
+                        </h1>
+
+                        <p class="mt-4 text-sm leading-relaxed text-slate-400">
+                            M+4 滚动预测，按门店拆分任务，分级审批实时追踪，报表一键汇总。
+                        </p>
+                    </div>
+
+                    <div class="mt-10 grid gap-3">
+                        <div class="flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-800/50 px-4 py-3">
+                            <svg class="h-5 w-5 shrink-0 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                            <div>
+                                <p class="text-xs font-medium text-slate-200">计划提报</p>
+                                <p class="text-[11px] text-slate-500">按月维护 M+1 ~ M+4 SKU 预测</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-800/50 px-4 py-3">
+                            <svg class="h-5 w-5 shrink-0 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div>
+                                <p class="text-xs font-medium text-slate-200">分级审批</p>
+                                <p class="text-[11px] text-slate-500">多级可配置审批流程，精确追踪</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-800/50 px-4 py-3">
+                            <svg class="h-5 w-5 shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                            <div>
+                                <p class="text-xs font-medium text-slate-200">报表汇总</p>
+                                <p class="text-[11px] text-slate-500">多维度聚合分析，CSV 导出</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Login Form -->
+            <div class="rounded-xl bg-white p-8 shadow-xl ring-1 ring-slate-200 lg:rounded-l-none">
+                <p class="text-[11px] font-medium uppercase tracking-widest text-slate-400">Sign In</p>
+                <h2 class="mt-2 text-2xl font-bold text-slate-900 font-heading">登录系统</h2>
+                <p class="mt-1 text-xs text-slate-500">使用你的账号进入销售计划工作台。</p>
+
+                <form method="post" class="mt-6 space-y-4">
+                    {% csrf_token %}
+
+                    {% if form.errors %}
+                    <div class="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                        <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        用户名或密码不正确，请重新输入。
+                    </div>
+                    {% endif %}
+
+                    <div>
+                        <label class="mb-1.5 block text-xs font-medium text-slate-600">用户名</label>
+                        <input type="text" name="username" required autocomplete="username"
+                               class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20">
+                    </div>
+
+                    <div>
+                        <label class="mb-1.5 block text-xs font-medium text-slate-600">密码</label>
+                        <input type="password" name="password" required autocomplete="current-password"
+                               class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20">
+                    </div>
+
+                    <button type="submit" class="w-full rounded-md bg-brand-700 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2">
+                        登录
+                    </button>
+                </form>
+
+                {% debug %}
+                {% if debug %}
+                <div class="mt-5 flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                    <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    开发模式，测试账号：admin / admin123
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(source:*)",
+      "Bash(cd:*)",
+      "mcp__chrome-devtools__new_page",
+      "mcp__chrome-devtools__take_screenshot",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__chrome-devtools__navigate_page",
+      "Bash(netstat -ano)",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__zread__get_repo_structure",
+      "mcp__web-search-prime__web_search_prime",
+      "mcp__plugin_context7_context7__query-docs",
+      "mcp__zread__read_file",
+      "mcp__web-reader__webReader",
+      "mcp__chrome-devtools__list_console_messages",
+      "mcp__chrome-devtools__get_console_message",
+      "mcp__chrome-devtools__list_network_requests",
+      "mcp__chrome-devtools__evaluate_script",
+      "Bash(tasklist)",
+      "Bash(taskkill //PID 26784 //F)",
+      "mcp__chrome-devtools__fill_form",
+      "mcp__chrome-devtools__click",
+      "mcp__chrome-devtools__wait_for",
+      "Bash(taskkill //PID 33596 //F)",
+      "Bash(taskkill //PID 29896 //F)",
+      "Bash(taskkill //PID 1504 //F)",
+      "mcp__zread__search_doc"
+    ]
+  }
+}

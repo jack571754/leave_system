@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}Approval Center{% endblock %}
+{% block page_title %}Approval Center{% endblock %}
+
+{% block content %}
+<div class="page-enter space-y-6 lg:space-y-8">
+    <section class="grid gap-5 xl:grid-cols-[1.3fr_0.95fr]">
+        <div class="app-card app-card-muted relative overflow-hidden px-6 py-7 md:px-8 md:py-8">
+            <div class="absolute right-0 top-0 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(184,146,79,0.16),transparent_70%)]"></div>
+            <div class="absolute bottom-[-2.5rem] right-16 h-32 w-32 rounded-full bg-[radial-gradient(circle,rgba(87,132,255,0.18),transparent_72%)] blur-md"></div>
+
+            <div class="relative flex h-full flex-col justify-between gap-8">
+                <div class="space-y-4">
+                    <span class="app-pill">Executive Flow</span>
+                    <div class="max-w-xl">
+                        <h1 class="font-heading text-2xl font-semibold leading-[1.3] tracking-[0.01em] text-[#2f2824] md:text-[2rem]">
+                            A quieter approval workspace with glass surfaces, restrained gold accents, and clearer operational focus.
+                        </h1>
+                        <p class="mt-4 max-w-2xl text-sm leading-8 text-[#776c65]">
+                            Review current approval load, inspect request status, and move through the queue from a calmer, more breathable control surface.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-3">
+                    <a href="{% url 'approvals:pending' %}" class="app-metric-card block transition-transform duration-200 hover:-translate-y-1">
+                        <p class="text-[11px] uppercase tracking-[0.24em] text-[#9f9187]">To Be Approved</p>
+                        <p class="font-accent app-gold-text mt-3 text-right text-5xl font-semibold leading-none">{{ pending_count }}</p>
+                        <p class="mt-3 text-xs leading-6 text-[#7a6f68]">Current queue awaiting your decision.</p>
+                    </a>
+
+                    <a href="{% url 'approvals:my_requests' %}" class="app-metric-card block transition-transform duration-200 hover:-translate-y-1">
+                        <p class="text-[11px] uppercase tracking-[0.24em] text-[#9f9187]">My Requests</p>
+                        <p class="mt-3 text-right font-heading text-4xl font-semibold leading-none text-[#355ed0]">{{ my_pending_requests }}</p>
+                        <p class="mt-3 text-xs leading-6 text-[#7a6f68]">Submitted items still in circulation.</p>
+                    </a>
+
+                    <a href="{% url 'approvals:history' %}" class="app-metric-card block transition-transform duration-200 hover:-translate-y-1">
+                        <p class="text-[11px] uppercase tracking-[0.24em] text-[#9f9187]">History</p>
+                        <p class="mt-3 text-right font-heading text-xl font-semibold leading-none text-[#3a332f]">Archive</p>
+                        <p class="mt-3 text-xs leading-6 text-[#7a6f68]">Trace previous decisions and routing outcomes.</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="app-card px-6 py-7 md:px-7 md:py-8">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-[11px] uppercase tracking-[0.24em] text-[#a4978e]">Today</p>
+                    <h2 class="mt-2 font-heading text-xl font-semibold text-[#312a25]">Approval Pulse</h2>
+                </div>
+                <span class="rounded-full border border-white/50 bg-white/55 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#8f837b] shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+                    calm mode
+                </span>
+            </div>
+
+            <div class="mt-6 space-y-4">
+                <div class="rounded-[1.4rem] border border-white/50 bg-white/55 px-5 py-4 shadow-[8px_8px_24px_rgba(190,179,166,0.22),inset_0_1px_0_rgba(255,255,255,0.76)]">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <p class="text-[11px] uppercase tracking-[0.2em] text-[#a29389]">Status</p>
+                            <p class="mt-2 font-heading text-lg font-semibold text-[#312a25]">
+                                {% if pending_count %}{{ pending_count }} item{{ pending_count|pluralize }} needs attention{% else %}No urgent approvals pending{% endif %}
+                            </p>
+                        </div>
+                        <div class="flex h-14 w-14 items-center justify-center rounded-full border border-[rgba(184,146,79,0.15)] bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.95),rgba(235,223,205,0.72))] shadow-[inset_0_1px_0_rgba(255,255,255,0.85),8px_10px_22px_rgba(193,178,162,0.24)]">
+                            <svg class="h-6 w-6 text-[#b8924f]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M9 12l2 2 4-4m5.5.5A8.5 8.5 0 113.5 10.5a8.5 8.5 0 0117 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-[1.4rem] border border-white/45 bg-white/48 px-5 py-4 text-sm leading-7 text-[#766b64] shadow-[10px_10px_26px_rgba(195,183,170,0.18),inset_0_1px_0_rgba(255,255,255,0.72)]">
+                    Focus on pending queue first, then review your submitted requests to identify stalled approvals or escalation needs.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="grid gap-5 lg:grid-cols-2">
+        <div class="app-card px-6 py-6 md:px-7 md:py-7">
+            <div class="flex items-center justify-between gap-4">
+                <div>
+                    <p class="text-[11px] uppercase tracking-[0.24em] text-[#a4978e]">Queue</p>
+                    <h3 class="mt-2 font-heading text-xl font-semibold text-[#312a25]">To Be Approved</h3>
+                </div>
+                <a href="{% url 'approvals:pending' %}" class="app-link text-sm font-semibold tracking-[0.01em]">View Details</a>
+            </div>
+
+            <div class="mt-6 space-y-4">
+                {% for instance in pending_instances %}
+                <div class="rounded-[1.55rem] border border-white/50 bg-[linear-gradient(180deg,rgba(255,253,250,0.72),rgba(244,237,229,0.62))] px-5 py-5 shadow-[12px_12px_28px_rgba(195,183,171,0.22),-8px_-8px_18px_rgba(255,255,255,0.74),inset_0_1px_0_rgba(255,255,255,0.72)] transition-transform duration-200 hover:-translate-y-1">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="min-w-0">
+                            <p class="truncate text-sm font-semibold tracking-[0.01em] text-[#302924]">{{ instance.task.store.name }}</p>
+                            <p class="mt-2 text-xs uppercase tracking-[0.18em] text-[#a19289]">Campaign</p>
+                            <p class="mt-1 truncate text-sm leading-7 text-[#726760]">{{ instance.task.campaign.title }}</p>
+                            <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-[#8b7f77]">
+                                <span class="rounded-full border border-[rgba(184,146,79,0.18)] bg-white/55 px-3 py-1">Round {{ instance.round_no }}</span>
+                                <span class="rounded-full border border-[rgba(122,109,98,0.12)] bg-white/45 px-3 py-1">Step {{ instance.current_step }}</span>
+                            </div>
+                        </div>
+                        <a href="{% url 'approvals:instance_detail' instance.pk %}" class="glass-button rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em]">Details</a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="app-empty-state">
+                    <svg class="app-empty-illustration" fill="none" viewBox="0 0 88 88" stroke="currentColor">
+                        <path d="M20 28.5h48M24 28.5v34m40-34v34M18 62.5h52M31.5 18h25M28 18h32a3 3 0 013 3v7.5H25V21a3 3 0 013-3zm4 15.5v10m24-10v10m-31 19h38v7.5H25V62.5zm6.5 0v7.5m25-7.5v7.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/>
+                    </svg>
+                    <p class="font-heading text-base font-semibold tracking-[0.01em] text-[#3a332f]">Queue cleared</p>
+                    <p class="mx-auto mt-2 max-w-sm leading-7 text-[#7a6f68]">No approval instances are waiting right now. The cabinet stays closed until the next submission arrives.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="app-card px-6 py-6 md:px-7 md:py-7">
+            <div class="flex items-center justify-between gap-4">
+                <div>
+                    <p class="text-[11px] uppercase tracking-[0.24em] text-[#a4978e]">Tracking</p>
+                    <h3 class="mt-2 font-heading text-xl font-semibold text-[#312a25]">My Requests</h3>
+                </div>
+                <a href="{% url 'approvals:my_requests' %}" class="app-link text-sm font-semibold tracking-[0.01em]">View Details</a>
+            </div>
+
+            <div class="mt-6 space-y-4">
+                {% for instance in my_requests_preview %}
+                <div class="rounded-[1.55rem] border border-white/50 bg-[linear-gradient(180deg,rgba(255,253,250,0.72),rgba(244,237,229,0.62))] px-5 py-5 shadow-[12px_12px_28px_rgba(195,183,171,0.22),-8px_-8px_18px_rgba(255,255,255,0.74),inset_0_1px_0_rgba(255,255,255,0.72)] transition-transform duration-200 hover:-translate-y-1">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="min-w-0">
+                            <p class="truncate text-sm font-semibold tracking-[0.01em] text-[#302924]">{{ instance.task.store.name }}</p>
+                            <p class="mt-2 text-xs uppercase tracking-[0.18em] text-[#a19289]">Current Status</p>
+                            <p class="mt-1 truncate text-sm leading-7 text-[#726760]">{{ instance.get_status_display }} · {{ instance.task.campaign.title }}</p>
+                        </div>
+                        <a href="{% url 'approvals:instance_detail' instance.pk %}" class="glass-button rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em]">Details</a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="app-empty-state">
+                    <svg class="app-empty-illustration" fill="none" viewBox="0 0 88 88" stroke="currentColor">
+                        <path d="M24 24.5h30l10 10v29a4 4 0 01-4 4H24a4 4 0 01-4-4v-35a4 4 0 014-4zm30 0V35h10M29 45h26M29 54h20" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/>
+                    </svg>
+                    <p class="font-heading text-base font-semibold tracking-[0.01em] text-[#3a332f]">Nothing in circulation</p>
+                    <p class="mx-auto mt-2 max-w-sm leading-7 text-[#7a6f68]">You have no active submitted requests at the moment. New submissions will appear here for quick tracking.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

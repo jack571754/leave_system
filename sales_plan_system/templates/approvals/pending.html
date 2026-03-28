@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}待我审批{% endblock %}
+{% block nav_approvals %}bg-slate-800{% endblock %}
+{% block page_title %}待我审批{% endblock %}
+
+{% block content %}
+<div class="space-y-4">
+    <!-- Filter Section -->
+    <section class="rounded-lg border border-slate-200 bg-white p-4">
+        <form method="get" class="flex flex-wrap items-end gap-3">
+            <div>
+                <label class="mb-1.5 block text-xs font-medium text-slate-600">按月份筛选</label>
+                <input type="month" name="month" value="{{ current_month }}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs">
+            </div>
+            <button type="submit" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50">筛选</button>
+        </form>
+    </section>
+
+    <!-- Approval Instance List -->
+    <section class="rounded-lg border border-slate-200 bg-white p-4">
+        <form method="post" action="{% url 'approvals:batch_approve' %}">
+            {% csrf_token %}
+            <div class="mb-3 flex items-center justify-between">
+                <h3 class="text-sm font-bold font-heading text-slate-800">审批实例列表</h3>
+                <div class="flex gap-2">
+                    <button type="submit" class="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700">批量通过</button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200 text-xs">
+                    <thead class="bg-slate-50 text-left text-[11px] font-medium uppercase tracking-wider text-slate-500">
+                        <tr>
+                            <th class="px-3 py-2"><input type="checkbox" onclick="document.querySelectorAll('input[name=&quot;task_ids&quot;]').forEach(el => el.checked = this.checked)"></th>
+                            <th class="px-3 py-2">店铺</th>
+                            <th class="px-3 py-2">批次</th>
+                            <th class="px-3 py-2">轮次</th>
+                            <th class="px-3 py-2">当前步骤</th>
+                            <th class="px-3 py-2">提交人</th>
+                            <th class="px-3 py-2">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for instance in instances %}
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="px-3 py-2"><input type="checkbox" name="task_ids" value="{{ instance.task_id }}"></td>
+                            <td class="px-3 py-2 font-medium text-slate-800">{{ instance.task.store.name }}</td>
+                            <td class="px-3 py-2 text-slate-500">{{ instance.task.campaign.title }} / {{ instance.task.campaign.plan_month }}</td>
+                            <td class="px-3 py-2 text-slate-500">第 {{ instance.round_no }} 轮</td>
+                            <td class="px-3 py-2 text-slate-500">第 {{ instance.current_step }} 步</td>
+                            <td class="px-3 py-2 text-slate-500">{{ instance.submitter.get_full_name|default:instance.submitter.username }}</td>
+                            <td class="px-3 py-2">
+                                <div class="flex flex-wrap gap-1.5">
+                                    <a href="{% url 'approvals:instance_detail' instance.pk %}" class="rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs hover:bg-slate-50">详情</a>
+                                    <a href="{% url 'plans:task_detail' instance.task.pk %}" class="rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs hover:bg-slate-50">任务</a>
+                                    <button formaction="{% url 'approvals:approve_task' instance.task.pk %}" class="rounded-lg bg-green-600 px-2.5 py-1.5 text-xs text-white hover:bg-green-700">通过</button>
+                                    <button formaction="{% url 'approvals:reject_task' instance.task.pk %}" class="rounded-lg bg-red-600 px-2.5 py-1.5 text-xs text-white hover:bg-red-700">驳回提交人</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="7" class="px-3 py-10 text-center text-xs text-slate-500">暂无待审批实例。</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </section>
+
+    <!-- Batch Reject Section -->
+    <section class="rounded-lg border border-slate-200 bg-white p-4">
+        <form method="post" action="{% url 'approvals:batch_reject' %}" class="space-y-3">
+            {% csrf_token %}
+            <h3 class="text-sm font-bold font-heading text-slate-800">批量驳回</h3>
+            <div class="grid gap-3 md:grid-cols-[200px_1fr_auto]">
+                <select name="action" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs">
+                    <option value="reject_to_submitter">驳回提交人</option>
+                    <option value="reject_to_previous">驳回上一步</option>
+                </select>
+                <input type="text" name="comment" placeholder="批量驳回说明" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs">
+                <button type="submit" class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700">执行批量驳回</button>
+            </div>
+            <p class="text-[11px] text-slate-400">勾选项与上方列表共用。</p>
+        </form>
+    </section>
+</div>
+{% endblock %}

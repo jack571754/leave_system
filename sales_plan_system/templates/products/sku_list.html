@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}SKU 管理 - 销售计划系统{% endblock %}
+{% block nav_products %}bg-slate-800{% endblock %}
+{% block page_title %}SKU 管理{% endblock %}
+
+{% block content %}
+<div x-data="skuListData()" class="space-y-4">
+    <div class="rounded-lg border border-slate-200 bg-white p-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-3">
+                <input type="text" x-model="search" @input.debounce.300ms="searchSKU()" placeholder="搜索 SKU 编码或名称" class="rounded-md border border-slate-300 px-3 py-1.5 text-xs outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20">
+                <select x-model="statusFilter" @change="searchSKU()" class="rounded-md border border-slate-300 px-3 py-1.5 text-xs outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20">
+                    <option value="">全部状态</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <select x-model="brandFilter" @change="searchSKU()" class="rounded-md border border-slate-300 px-3 py-1.5 text-xs outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20">
+                    <option value="">全部品牌</option>
+                    {% for brand in brands %}
+                    <option value="{{ brand.id }}">{{ brand.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <a href="{% url 'products:sku_import' %}" class="rounded-md border border-slate-200 px-3 py-1.5 text-xs hover:bg-slate-50">导入</a>
+                <a href="{% url 'products:sku_export' %}" class="rounded-md border border-slate-200 px-3 py-1.5 text-xs hover:bg-slate-50">导出</a>
+                <a href="{% url 'products:sku_create' %}" class="rounded-md bg-brand-700 px-3 py-1.5 text-xs text-white hover:bg-brand-800">新增 SKU</a>
+            </div>
+        </div>
+    </div>
+
+    {% include 'products/partials/sku_table.html' %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function skuListData() {
+    return {
+        search: '{{ search }}',
+        statusFilter: '{{ status }}',
+        brandFilter: '{{ brand_id }}',
+        searchSKU() {
+            const params = new URLSearchParams({
+                search: this.search,
+                status: this.statusFilter,
+                brand: this.brandFilter
+            });
+            htmx.ajax('GET', `{% url 'products:sku_list' %}?${params.toString()}`, {
+                target: '#sku-table',
+                swap: 'outerHTML'
+            });
+        }
+    };
+}
+</script>
+{% endblock %}
